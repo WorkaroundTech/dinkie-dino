@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import type { Action, FoodType, GameEvent, PetState, Species } from '../../src/core';
 import { act, advance, createPet } from '../../src/core';
 import { decideSpecies } from '../../src/core/rules/species';
-import { at, testContext } from './helpers';
+import { at, calmContext } from './helpers';
 
-const ctx = testContext();
+const ctx = calmContext();
 
 function pet(seed: number, nowMs = at(0, 12)): PetState {
   return createPet({ id: 'p', name: 'Test', seed, nowMs }, ctx);

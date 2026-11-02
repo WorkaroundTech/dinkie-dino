@@ -1,6 +1,7 @@
 import type { Context } from './context';
 import type { GameEvent } from './events';
 import { chance } from './rng';
+import { bathOpen, bathe, cure } from './rules/health';
 import { raise } from './rules/meters';
 import type { PetState } from './state';
 import { METER_MAX, isHalted } from './state';
@@ -17,6 +18,8 @@ export type Action =
   | { kind: 'lamp' }
   | { kind: 'pet' }
   | { kind: 'educate' }
+  | { kind: 'bath' }
+  | { kind: 'medical' }
   | { kind: 'check' }
   | { kind: 'clock' };
 
@@ -24,7 +27,10 @@ export type Action =
 export type Refusal =
   | 'locked' // dead, or in the locked final form (LIFE-05)
   | 'asleep' // only Lamp, Check and Clock work at night (SLEEP-09)
-  | 'full'; // a full pet refuses food and drink (Q-FOOD-3 default)
+  | 'sick' // a sick pet refuses everything except Medicine, Lamp, Check, Clock and AC (SICK-01/02)
+  | 'full' // a full pet refuses food and drink (Q-FOOD-3 default)
+  | 'bathClosed' // Bath is only open when DIRTY or in the hour before bedtime (DIRT-06)
+  | 'notSick'; // Medicine only works on a sick pet (MED-04)
 
 export interface ActionResult {
   state: PetState;
@@ -34,6 +40,7 @@ export interface ActionResult {
 }
 
 const WORKS_ASLEEP = new Set<Action['kind']>(['lamp', 'check', 'clock']);
+const REFUSED_WHEN_SICK = new Set<Action['kind']>(['drink', 'food', 'educate', 'pet', 'bath']);
 
 /** The meal group a food belongs to for the species rule (SPEC); Ice Cream belongs to none. */
 const FOOD_GROUP: Record<FoodType, 'meat' | 'plant' | 'noodles' | null> = {
@@ -46,9 +53,17 @@ const FOOD_GROUP: Record<FoodType, 'meat' | 'plant' | 'noodles' | null> = {
 };
 
 /** Null when the action would be carried out, otherwise the reason it would be refused. */
-export function canDo(pet: Readonly<PetState>, action: Action, ctx: Context): Refusal | null {
+export function canDo(
+  pet: Readonly<PetState>,
+  action: Action,
+  nowMs: number,
+  ctx: Context,
+): Refusal | null {
   if (isHalted(pet)) return 'locked';
   if (pet.asleep && !WORKS_ASLEEP.has(action.kind)) return 'asleep';
+  if (pet.sick && REFUSED_WHEN_SICK.has(action.kind)) return 'sick';
+  if (action.kind === 'medical' && !pet.sick) return 'notSick';
+  if (action.kind === 'bath' && !bathOpen(pet, ctx.localTime(nowMs), ctx)) return 'bathClosed';
 
   if (ctx.tuning.food.refuseWhenFull) {
     if (action.kind === 'drink' && pet.needs.thirst >= METER_MAX.thirst) return 'full';
@@ -77,7 +92,7 @@ export function act(
   const state = structuredClone(pet) as PetState;
   const events: GameEvent[] = [];
 
-  const refused = canDo(state, action, ctx);
+  const refused = canDo(state, action, nowMs, ctx);
   if (refused) {
     events.push({ type: 'refused', atMs: nowMs, action, reason: refused });
     return { state, events, refused };
@@ -109,6 +124,14 @@ export function act(
 
     case 'educate':
       raise(state.needs, 'education', tuning.care.educateGain);
+      break;
+
+    case 'bath':
+      bathe(state, ctx, nowMs, events);
+      break;
+
+    case 'medical':
+      cure(state, nowMs, events);
       break;
 
     case 'check':

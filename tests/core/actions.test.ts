@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Action, PetState } from '../../src/core';
 import { act, advance, canDo, createPet } from '../../src/core';
-import { at, testContext } from './helpers';
+import { at, calmContext, testContext } from './helpers';
 
 const ctx = testContext();
 const NOW = at(0, 12);
@@ -173,7 +173,7 @@ describe('while asleep (SLEEP-09)', () => {
     const p = asleep();
     expect(p.asleep).toBe(true);
     for (const kind of ['lamp', 'check', 'clock'] as const) {
-      expect(canDo(p, { kind }, ctx), kind).toBeNull();
+      expect(canDo(p, { kind }, NOW, ctx), kind).toBeNull();
     }
     const refused: Action[] = [
       { kind: 'drink' },
@@ -181,7 +181,7 @@ describe('while asleep (SLEEP-09)', () => {
       { kind: 'pet' },
       { kind: 'educate' },
     ];
-    for (const action of refused) expect(canDo(p, action, ctx), action.kind).toBe('asleep');
+    for (const action of refused) expect(canDo(p, action, NOW, ctx), action.kind).toBe('asleep');
   });
 
   it('can still switch the light off', () => {
@@ -200,12 +200,12 @@ describe('check and clock', () => {
 
 describe('a locked pet (LIFE-05)', () => {
   it('refuses everything once dead or in its final form', () => {
-    const final = advance(pet(5), at(30, 12), ctx).state;
+    const final = advance(pet(5), at(30, 12), calmContext()).state;
     expect(final.stage).toBe('final');
-    expect(canDo(final, { kind: 'check' }, ctx)).toBe('locked');
-    expect(canDo({ ...pet(), dead: { cause: 'sick', atMs: NOW } }, { kind: 'drink' }, ctx)).toBe(
-      'locked',
-    );
+    expect(canDo(final, { kind: 'check' }, NOW, ctx)).toBe('locked');
+    expect(
+      canDo({ ...pet(), dead: { cause: 'sick', atMs: NOW } }, { kind: 'drink' }, NOW, ctx),
+    ).toBe('locked');
   });
 });
 

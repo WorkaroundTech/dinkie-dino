@@ -1,5 +1,6 @@
 import type { Context } from './context';
 import type { GameEvent } from './events';
+import { updateDangers, updateDirt, rollWakeSickness } from './rules/health';
 import { applyMorningGrowth } from './rules/growth';
 import { decayNeeds } from './rules/needs';
 import { updateSleep } from './rules/sleep';
@@ -33,13 +34,20 @@ export function advance(pet: Readonly<PetState>, toMs: number, ctx: Context): Ad
 }
 
 /**
- * One check, at the instant `tick` starts. First the interval that just ended is accounted
- * for (needs decay at the rate of the state the pet was in), then the schedule is applied at
- * this instant (bedtime, wake-up and the morning routine).
+ * One check, at the instant `tick` starts. The order matters:
+ *
+ * 1. The interval that just ended is accounted for, at the rates of the state the pet was in
+ *    (need decay, light left on at night).
+ * 2. The schedule is applied at this instant (bedtime, wake-up, the morning routine).
+ * 3. Conditions are updated: dirt, then the death clocks. Rolls only happen for an interval that
+ *    was spent awake, so nothing is rolled at the check that ends a night (SLEEP-12).
  */
 function processCheck(pet: PetState, tick: number, ctx: Context, events: GameEvent[]): void {
   const atMs = tickStartMs(tick);
+  const awakeInterval = !pet.asleep;
+
   decayNeeds(pet, ctx.tuning);
+  if (pet.asleep && pet.lightOn) pet.nightLightChecks += 1;
 
   const change = updateSleep(pet, ctx.localTime(atMs), ctx.settings, ctx.tuning);
   if (change === 'fellAsleep') {
@@ -47,6 +55,11 @@ function processCheck(pet: PetState, tick: number, ctx: Context, events: GameEve
   } else if (change === 'woke') {
     pet.wakeUps += 1;
     events.push({ type: 'woke', atMs, wakeUps: pet.wakeUps });
+    rollWakeSickness(pet, ctx, atMs, events);
     applyMorningGrowth(pet, atMs, ctx.tuning, events);
+    if (isHalted(pet)) return;
   }
+
+  updateDirt(pet, ctx, tick, atMs, !pet.asleep, awakeInterval, events);
+  updateDangers(pet, ctx, tick, atMs, awakeInterval, events);
 }

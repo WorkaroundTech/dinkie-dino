@@ -73,6 +73,12 @@ export interface PetState {
   asleep: boolean;
   /** The room light, switched with the Lamp (SLEEP-01). */
   lightOn: boolean;
+  /** Sleeping checks with the light on, since the last wake-up (SLEEP-02/03). */
+  nightLightChecks: number;
+  sick: { sinceMs: number } | null;
+  dirt: Dirt;
+  /** Running death clocks, by cause (DEATH-07/08). */
+  dangers: Partial<Record<DeathCause, Danger>>;
   needs: Needs;
   decay: DecayProgress;
 
@@ -89,6 +95,36 @@ export interface Diet {
   meat: number;
   plant: number;
   noodles: number;
+}
+
+/** Dirtiness (DIRT-01…10): there is no poop; the pet simply gets dirty over time. */
+export interface Dirt {
+  /** Checks since the last bath (or hatching) while clean; it keeps counting through the night (DIRT-08). */
+  checks: number;
+  /** The pet gets dirty after this many checks, drawn per bath cycle: 16 to 20 hours (DIRT-02). */
+  threshold: number;
+  /** Set while the pet is DIRTY. */
+  dirty: null | {
+    sinceMs: number;
+    /** Checks spent dirty. */
+    checks: number;
+    /** The 2 to 3 hours of grace before the dirty checks begin (DIRT-09), in checks. */
+    onsetChecks: number;
+    /** Dirty checks made so far; the sickness chance escalates with it. */
+    rolls: number;
+    /** Set once the dirt made the pet sick; cleared by the cure (DIRT-10). */
+    sickRollsStopped: boolean;
+  };
+}
+
+/**
+ * A condition that can eventually kill: it must last `onsetChecks` before death checks start,
+ * then each awake check rolls with a rising chance (DEATH-07/08).
+ */
+export interface Danger {
+  checks: number;
+  onsetChecks: number;
+  rolls: number;
 }
 
 export interface NewPetParams {
@@ -128,6 +164,20 @@ export function createPet(params: NewPetParams, ctx: Context): PetState {
     dead: null,
     asleep,
     lightOn: false, // Q-START-1 default
+    nightLightChecks: 0,
+    sick: null,
+    dirt: {
+      checks: 0,
+      threshold: randInt(
+        params.seed,
+        0,
+        'dirtThreshold',
+        tuning.health.dirt.thresholdChecks.min,
+        tuning.health.dirt.thresholdChecks.max,
+      ),
+      dirty: null,
+    },
+    dangers: {},
     needs: { ...tuning.initial },
     decay: { hunger: 0, thirst: 0, happiness: 0 },
     diet: { meat: 0, plant: 0, noodles: 0 },

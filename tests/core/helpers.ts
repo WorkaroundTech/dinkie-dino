@@ -1,4 +1,4 @@
-import type { Context } from '../../src/core';
+import type { Context, Tuning } from '../../src/core';
 import { DEFAULT_SETTINGS, DEFAULT_TUNING, fixedOffsetLocalTime } from '../../src/core';
 import type { LocalTimeFn } from '../../src/core';
 
@@ -28,4 +28,33 @@ export function testContext(
   localTime: LocalTimeFn = fixedOffsetLocalTime(TEST_OFFSET_MINUTES),
 ): Context {
   return { settings: DEFAULT_SETTINGS, tuning: DEFAULT_TUNING, localTime, ...overrides };
+}
+
+/** The tuning of `calmContext`: no sickness, no dirt, no death. */
+export function calmTuning(): Tuning {
+  const tuning = structuredClone(DEFAULT_TUNING);
+  const never = { min: 1_000_000_000, max: 1_000_000_000 };
+  tuning.health.wakeSickChance = { lightOff: 0, lightOn: 0 };
+  tuning.health.dirt.thresholdChecks = never;
+  tuning.health.deathOnsetChecks = {
+    sick: never,
+    hunger: never,
+    thirst: never,
+    lowHappiness: never,
+  };
+  return tuning;
+}
+
+/**
+ * A context in which nothing can go wrong: no sickness, no dirt, no death. For tests about
+ * growth and the schedule, which would otherwise be cut short by an unattended pet dying.
+ * `patch` can switch individual hazards back on.
+ */
+export function calmContext(
+  localTime: LocalTimeFn = fixedOffsetLocalTime(TEST_OFFSET_MINUTES),
+  patch?: (tuning: Tuning) => void,
+): Context {
+  const tuning = calmTuning();
+  patch?.(tuning);
+  return testContext({ tuning }, localTime);
 }

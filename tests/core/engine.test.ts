@@ -3,9 +3,9 @@ import type { GameEvent, PetState } from '../../src/core';
 import { advance, createPet, fixedOffsetLocalTime, isHalted } from '../../src/core';
 import { rand } from '../../src/core/rng';
 import { TICK_MS } from '../../src/core/time';
-import { at, atOffset, testContext } from './helpers';
+import { at, atOffset, calmContext, testContext } from './helpers';
 
-const ctx = testContext();
+const ctx = calmContext();
 
 function newPet(nowMs: number, seed = 1): PetState {
   return createPet({ id: `pet-${seed}`, name: 'Test', seed, nowMs }, ctx);
@@ -197,7 +197,11 @@ describe('final form (LIFE-04, LIFE-05, LIFE-07)', () => {
   });
 });
 
-describe('determinism (TIME-02)', () => {
+describe('determinism with the real rules (TIME-02)', () => {
+  const real = testContext();
+  const newRealPet = (nowMs: number, seed = 1): PetState =>
+    createPet({ id: `pet-${seed}`, name: 'Test', seed, nowMs }, real);
+
   /** Splits [from, to] into pieces of 1 check up to 3 days, deterministically. */
   function pieces(from: number, to: number, salt: number): number[] {
     const cuts: number[] = [];
@@ -213,12 +217,12 @@ describe('determinism (TIME-02)', () => {
     for (const seed of [1, 2, 3, 4, 5, 6]) {
       const start = at(0, 9 + (seed % 12));
       const end = at(25, 12);
-      const whole = advance(newPet(start, seed), end, ctx);
+      const whole = advance(newRealPet(start, seed), end, real);
 
-      let pet = newPet(start, seed);
+      let pet = newRealPet(start, seed);
       const events: GameEvent[] = [];
       for (const cut of pieces(start, end, seed)) {
-        const step = advance(pet, cut, ctx);
+        const step = advance(pet, cut, real);
         pet = step.state;
         events.push(...step.events);
       }
@@ -229,13 +233,13 @@ describe('determinism (TIME-02)', () => {
 
   it('survives saving and reloading in the middle', () => {
     const start = at(0, 12);
-    const whole = advance(newPet(start, 9), at(18, 12), ctx).state;
+    const whole = advance(newRealPet(start, 9), at(18, 12), real).state;
 
-    let pet = newPet(start, 9);
+    let pet = newRealPet(start, 9);
     for (const cut of [at(3, 14), at(9, 3), at(9, 7), at(14, 22)]) {
-      pet = JSON.parse(JSON.stringify(advance(pet, cut, ctx).state)) as PetState;
+      pet = JSON.parse(JSON.stringify(advance(pet, cut, real).state)) as PetState;
     }
-    pet = advance(pet, at(18, 12), ctx).state;
+    pet = advance(pet, at(18, 12), real).state;
     expect(pet).toEqual(whole);
   });
 
@@ -261,9 +265,9 @@ describe('determinism (TIME-02)', () => {
   });
 
   it('does not modify the state it is given', () => {
-    const pet = newPet(at(0, 12), 4);
+    const pet = newRealPet(at(0, 12), 4);
     const snapshot = structuredClone(pet);
-    advance(pet, at(20, 12), ctx);
+    advance(pet, at(20, 12), real);
     expect(pet).toEqual(snapshot);
   });
 });
@@ -291,7 +295,7 @@ describe('the clock (TIME-04)', () => {
       // The local offset changes at this instant, in the middle of the night before day 5.
       const shiftAt = at(4, 23, 30);
       const offset = (utcMs: number) => -180 + (utcMs >= shiftAt ? shiftMinutes : 0);
-      const dst = testContext({}, (utcMs) => fixedOffsetLocalTime(offset(utcMs))(utcMs));
+      const dst = calmContext((utcMs) => fixedOffsetLocalTime(offset(utcMs))(utcMs));
 
       let pet = createPet({ id: 'p', name: 'T', seed: 3, nowMs: at(0, 12) }, dst);
       const wakeEvents: GameEvent[] = [];

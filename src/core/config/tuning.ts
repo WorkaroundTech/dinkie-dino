@@ -5,6 +5,12 @@ import type { CareStage } from '../state';
  * Every tunable number of the simulation, with the rule it implements. Values marked
  * "provisional" are placeholders that the simulator and play-testing will tune (M3).
  */
+/** An inclusive range of whole numbers. */
+export interface Range {
+  min: number;
+  max: number;
+}
+
 export interface Tuning {
   /** Meter values right after hatching (Q-START-1 default: half full, Normal mood). */
   initial: {
@@ -47,6 +53,25 @@ export interface Tuning {
     /** Pet never raises education past C+ (EDU-03). */
     petEducationCap: number;
     educateGain: number;
+  };
+
+  health: {
+    /** Chance of waking up SICK, by whether the light was left on while asleep (SLEEP-03). */
+    wakeSickChance: { lightOff: number; lightOn: number };
+    /** The escalating-chance template (COND-06): the first check, then plus `step` per check. */
+    escalation: { start: number; step: number };
+    dirt: {
+      /** Checks after a bath until the pet is dirty: 16 to 20 hours (DIRT-02). */
+      thresholdChecks: Range;
+      /** Checks spent dirty before the dirty checks begin: 2 to 3 hours (DIRT-09). */
+      onsetChecks: Range;
+      /** Happiness levels lost on every dirty check (DIRT-10, provisional). */
+      happinessDropPerCheck: number;
+    };
+    /** Checks a condition must last before death checks start (DEATH-07). */
+    deathOnsetChecks: Record<'sick' | 'hunger' | 'thirst' | 'lowHappiness', Range>;
+    /** Bath is allowed this many minutes before bedtime (DIRT-06). */
+    bathWindowMinutes: number;
   };
 
   species: {
@@ -97,6 +122,23 @@ export const DEFAULT_TUNING: Tuning = {
     petEducationGain: 1,
     petEducationCap: 2, // C+
     educateGain: 1,
+  },
+
+  health: {
+    wakeSickChance: { lightOff: 0.02, lightOn: 0.6 }, // SLEEP-03 (accepted defaults)
+    escalation: { start: 0.2, step: 0.1 }, // DIRT-09, COND-06
+    dirt: {
+      thresholdChecks: { min: 64, max: 80 }, // 16 to 20 h, DIRT-02
+      onsetChecks: { min: 8, max: 12 }, // 2 to 3 h, DIRT-09
+      happinessDropPerCheck: 1, // DIRT-10 (per check is a reading, to confirm)
+    },
+    deathOnsetChecks: {
+      sick: { min: 16, max: 24 }, // 4 to 6 h
+      hunger: { min: 192, max: 240 }, // empty for 2 days+ (upper end provisional)
+      thirst: { min: 96, max: 120 }, // empty for 1 day+ (upper end provisional)
+      lowHappiness: { min: 96, max: 192 }, // lowest level for 1 to 2 days
+    },
+    bathWindowMinutes: 60, // DIRT-06
   },
 
   species: { majorityShare: 0.5 },
