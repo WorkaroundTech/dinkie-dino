@@ -58,6 +58,7 @@ Two sources, in this order of precedence:
 | 11  | [States & actions catalogue](docs/11-states-and-actions.md)         | Every action, pet condition, environment variable and scheduled event; used to decide the care score                                |
 | 12  | [Blog guide review](docs/12-blog-guide-review.md)                   | A third-party guide to the real toy: what it confirms, where it conflicts with your decisions, and what's new (unverified)          |
 | 13  | [Architecture & tech stack](docs/13-architecture.md)                | **Proposal:** layers, simulation engine, time and randomness, config, art/sound pipeline, testing, milestones, decisions to approve |
+| 14  | [Localization](docs/14-localization.md)                             | pt-BR (primary), English, later Latin American Spanish: what is translated, the typed-catalog design, tests, draft glossary         |
 
 ## Conventions used in these docs
 

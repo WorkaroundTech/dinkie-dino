@@ -72,9 +72,25 @@ Decided rules live in [08](08-target-rules.md). Priority: **P0** blocks the simu
 | 11 | Q-EDU-6 | Over-play education drop chance: **50%**, size **1 grade**. → EDU-05 |
 | 11 | Blog C8 | **Death causes and onset times** (sick 4–6 h, hot/cold 6–8 h, low happiness 1–2 days, hunger 2+ days, thirst 1+ day). → DEATH-01/07/08 |
 | 11 | Meters | **Hunger and thirst range 0–8** (confirmed against the legacy code). → NEED-01 |
+| 13 | I18N | The app is **multilingual**: **pt-BR primary**, **English** alongside, **Latin American Spanish later**. → I18N-01, [14](14-localization.md) |
 | 12 | A1–A7 | **Architecture approved** (stack, counter-based randomness, 15-minute snapping). App name **Dinkie Dino**; MIT; git initialised; hosting on **GitHub Pages**. A8 (single vs. multiple pets) and A9 (pacing) not answered yet: proceeding with the recommended defaults. → [13](13-architecture.md) |
 
 ---
+
+## Localization questions (round 13)
+
+Details and the draft glossary are in [14](14-localization.md). Proposed defaults in brackets.
+
+| ID | Question | Proposed default |
+|----|----------|------------------|
+| **Q-I18N-1** | Is the **pt-BR glossary** right? Do you remember the Portuguese wording printed on the Brazilian toy or its manual? | Use my draft, you correct it |
+| **Q-I18N-2** | A visitor whose browser language is neither Portuguese, English nor Spanish: show **English** or **pt-BR**? | English (widely understood); Brazilians get pt-BR automatically |
+| **Q-I18N-3** | **Clock format** in settings and the clock screen: 24-hour always (like the toy?) or the locale's habit (24 h in Brazil, 12 h for US English)? | 24-hour everywhere |
+| **Q-I18N-4** | **Education grades** A+ to E+ stay as on the toy in every language? | Yes, toy fidelity |
+| **Q-I18N-5** | **Pet names**: 15 characters (counted as visible characters), accents and emoji allowed? | 15 graphemes, any letters, digits and emoji, trimmed |
+| **Q-I18N-6** | **Spanish**: when, and who reviews it? | After v1, with a native reviewer |
+| **Q-I18N-7** | **README and docs** stay in English? A short pt-BR README for the public repo? | Docs in English, a pt-BR README later |
+| **Q-I18N-8** | **One URL** with an in-app language switch, or one path per language (`/en/`)? | One URL and a switch (the save is per origin, so one address is simpler) |
 
 ## Architecture decisions (round 12)
 

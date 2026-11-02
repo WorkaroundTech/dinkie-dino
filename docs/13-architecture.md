@@ -25,6 +25,7 @@ Status: **proposal for your approval.** No code exists yet. It is derived from t
 | UI framework | **None** (plain TypeScript modules) | The UI is one LCD canvas, ten icon segments, five buttons and a few dialogs. A framework adds weight for no gain. *Alternative: Preact if the settings/menus grow.* |
 | LCD rendering | **Canvas 2D**, integer-scaled, `image-rendering: pixelated` | 19 × 16 dots with off-dot "ghosting" and a dimmed "lights off" look are trivial on a canvas |
 | Shell + icon segments | **Inline SVG** (original design) | Scales to any screen; each of the 10 segments is a path we toggle; no bitmap shell is needed |
+| Localization | **A tiny typed module plus `Intl`**, no library; pt-BR is the source of truth ([14](14-localization.md)) | ~150 strings do not justify a dependency; missing keys become compile errors |
 | Sprites | **Text bitmaps** compiled to typed data at build time (§13.7) | As agreed in round 2 |
 | Audio | **Web Audio** oscillator, square wave | SND-02 |
 | Storage | **IndexedDB** via a tiny key-value wrapper (`idb-keyval`) | More robust than `localStorage`; supports `navigator.storage.persist()`; the data is small JSON |
@@ -77,6 +78,9 @@ rakuraku-dinokun-web/
       input.ts                buttons, keyboard, chords (hold Esc+Enter, etc.)
       audio.ts                square-wave synth, note-list sounds
       storage.ts              IndexedDB, persist(), schema version
+    i18n/
+      locales/                pt-BR.ts (defines the Messages type), en.ts, later es-419.ts
+      index.ts                t(), plural(), setLocale(), detection; formatting through Intl
     ui/
       shell.svg.ts  lcd.ts  segments.ts  dialogs.ts  debug-panel.ts
     art/                      *.txt text bitmaps (you draw these), sprites.json (generated)
@@ -239,6 +243,7 @@ CI runs type-check, lint, unit tests, the simulator's invariants, and the e2e sm
 | A6 | Initialise a **git repository** in `rakuraku-dinokun-web` now | ✅ done (no commits yet) |
 | A7 | **Hosting** | ✅ **GitHub Pages** (see §13.15) |
 | A8 | Multiple pets (4 slots) vs. a single pet like the real toy (Q-UI-3). The data model supports N either way | ⏳ not answered; proceeding with my recommendation: single pet for v1, model ready for N |
+| A10 | **Localization approach** (round 13): a tiny typed module plus `Intl`, no library; pt-BR source of truth; en alongside; es-419 later ([14](14-localization.md)) | ⏳ proposed |
 | A9 | Phone pacing (Q-BLOG-2): keep `timeScale` at 1 for now | ⏳ not answered; proceeding with `timeScale = 1` |
 
 ## 13.13 Milestones
@@ -249,7 +254,7 @@ CI runs type-check, lint, unit tests, the simulator's invariants, and the e2e sm
 | M1 | **Core engine, part 1**: time grid, counter-based RNG, state, needs decay, sleep/wake, growth, final form | ✅ done: 67 tests, including the lifecycle timeline and jump = steps. Rules covered: TIME-01/02/04/05/06, LIFE-01…05/07, SLEEP-01/05/06/07/11 (attenuation), NEED-01, PACE-01 (decay rates are provisional until M3), CARE-01 (stub) |
 | M2 | **Core engine, part 2**: temperature/AC, dirt, sickness, death, species, weight, all actions | ✅ done in four commits (actions and species; health; temperature and AC; Jokenpo, weight and conditions): 219 tests and a mutation check of every rule group. Not yet done: the care score (CARE-02 is deferred), pet name/seed generation, migrations, and the pacing numbers, which M3 tunes |
 | M3 | **Simulator and tuning**: headless runs, pacing and death targets | PACE-01, DEATH-05/06 tests pass with defaults |
-| M4 | **UI shell**: SVG shell, LCD canvas, buttons, keyboard, scene builder, audio synth, placeholder art | Playable end to end with text placeholders |
+| M4 | **UI shell**: SVG shell, LCD canvas, buttons, keyboard, scene builder, audio synth, placeholder art, **the i18n module with the pt-BR and en catalogs** ([14](14-localization.md)) | Playable end to end with text placeholders |
 | M5 | **Persistence and PWA**: IndexedDB, migrations, catch-up summary, service worker, install prompt | Close the app for a day, reopen: pet advanced correctly; works offline |
 | M6 | **Debug panel and config overrides** | You can jump days and force states while play-testing |
 | M7 | **Sprite pipeline and editor**; integrate wave 1 art | Your small-blob frames render; fallback works |

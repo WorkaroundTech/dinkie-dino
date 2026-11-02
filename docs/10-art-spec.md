@@ -19,6 +19,8 @@ Goal: you draw the sprites in waves while the stage logic is built against place
 
 Frame 0 has no eye dots (a blink / eyes-closed frame). Frames 1–3 show two eye dots while the blob sways: left (frame 1), right (frame 2), centre (frame 3). The legacy app never loaded these four frames; its idle screen ended up using the 3-year Brontosaurus matrices instead.
 
+**No text in the art** (I18N-03, [14](14-localization.md)): sprites use only universal symbols, numbers, `°C`, `kg` and the grade letters A+ to E+, so the same art serves every language.
+
 ## 10.2 File format 🔶
 
 Plain-text bitmaps in the repo, one file per animation. `#` = dot on, `.` = dot off, one blank line between frames. A header line sets timing. Text diffs cleanly and needs no external tool.

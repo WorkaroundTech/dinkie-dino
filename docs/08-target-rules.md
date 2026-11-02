@@ -17,6 +17,7 @@ Items marked 🔶 are my interpretation or a proposed default and can be changed
 | ASSET-01 | **All art, animation, sound and fonts are created from scratch.** Nothing from the legacy Android project is reused (no sprites, shell, logo, sounds, or font). The legacy assets are only a *reference for behavior* (frame counts, timings, layout). |
 | ASSET-02 | `gato_chrono.mp3` and the legacy sound effects are **not** included; sounds are synthesized (SND-02). | ✅ |
 | ASSET-03 | New art should evoke the toy's feel (1-bit LCD, egg-shaped shell) but be an **original** design, not a copy of the commercial toy's artwork, logo or mascot. The legacy shell art appears to be the product's promotional art ([12 §12.5](12-blog-guide-review.md)). |
+| I18N-01 | The app is **multilingual**: **pt-BR is primary** (and the source of truth for all text), **English** ships alongside, **Latin American Spanish (es-419)** comes later. The core and the art contain no user-facing text. Details: [14](14-localization.md). | ✅ decided |
 | ASSET-04 | Art is delivered **in waves** (you draw the sprites). The stage logic is built first and must work with placeholder art, and any missing sprite must fall back to the closest available one. See [10](10-art-spec.md). |
 
 ## 8.2 Time model
