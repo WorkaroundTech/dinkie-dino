@@ -71,11 +71,24 @@ export interface PetState {
   dead: { cause: DeathCause; atMs: number } | null;
 
   asleep: boolean;
+  /** The room light, switched with the Lamp (SLEEP-01). */
+  lightOn: boolean;
   needs: Needs;
   decay: DecayProgress;
 
+  /** Meals given while the pet is a small or big blob; they decide the species (SPEC-01/05). */
+  diet: Diet;
+  /** Random draws made by actions so far: the counter for `rand` in actions (rng.ts). */
+  actionCounter: number;
+
   /** The last 15-minute check that has been processed (TIME-06). */
   lastCheckIndex: number;
+}
+
+export interface Diet {
+  meat: number;
+  plant: number;
+  noodles: number;
 }
 
 export interface NewPetParams {
@@ -114,8 +127,11 @@ export function createPet(params: NewPetParams, ctx: Context): PetState {
     finalForm: null,
     dead: null,
     asleep,
+    lightOn: false, // Q-START-1 default
     needs: { ...tuning.initial },
     decay: { hunger: 0, thirst: 0, happiness: 0 },
+    diet: { meat: 0, plant: 0, noodles: 0 },
+    actionCounter: 0,
     lastCheckIndex: tickIndexAt(params.nowMs),
   };
 }

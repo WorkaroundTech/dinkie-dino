@@ -1,3 +1,4 @@
+import type { FoodType } from '../actions';
 import type { CareStage } from '../state';
 
 /**
@@ -24,6 +25,33 @@ export interface Tuning {
   sleep: {
     /** Minutes added to the adult bedtime for each stage; younger pets sleep earlier (SLEEP-05/06). */
     bedtimeOffsetMinutes: Record<CareStage, number>;
+  };
+
+  /** What eating and drinking do (NEED-02, ICE-01…04, FOOD refusal default). */
+  food: {
+    /** Hunger points a serving of each food gives; Ice Cream gives none (ICE-01). */
+    hungerGain: Record<FoodType, number>;
+    thirstGain: number;
+    /** A full pet refuses food and drink (Q-FOOD-3 default). */
+    refuseWhenFull: boolean;
+    /** Ice Cream: 70% chance of weight gain (ICE-03) and +1 happiness level (ICE-04). */
+    iceCream: { weightChance: number; weightGainKg: number; happinessGain: number };
+  };
+
+  /** Pet and Educate: amounts and caps in levels (HAP-01, HAP-04, EDU-02, EDU-03). */
+  care: {
+    petHappinessGain: number;
+    /** Pet and Ice Cream never top happiness up: one below the maximum (HAP-01/04). */
+    happinessCapWithoutPlay: number;
+    petEducationGain: number;
+    /** Pet never raises education past C+ (EDU-03). */
+    petEducationCap: number;
+    educateGain: number;
+  };
+
+  species: {
+    /** A food group with more than this share of the meals wins outright (SPEC-02). */
+    majorityShare: number;
   };
 
   growth: {
@@ -54,6 +82,24 @@ export const DEFAULT_TUNING: Tuning = {
       adult: 0,
     },
   },
+
+  food: {
+    // Half meals +1 (Apple, Hamburger), full meals +2 (Carrot, Chicken Thigh, Noodles); legacy values.
+    hungerGain: { hamburger: 1, apple: 1, carrot: 2, chicken: 2, noodles: 2, iceCream: 0 },
+    thirstGain: 1,
+    refuseWhenFull: true,
+    iceCream: { weightChance: 0.7, weightGainKg: 1, happinessGain: 1 }, // weight scale: Q-WEIGHT-1
+  },
+
+  care: {
+    petHappinessGain: 1,
+    happinessCapWithoutPlay: 3, // Happy
+    petEducationGain: 1,
+    petEducationCap: 2, // C+
+    educateGain: 1,
+  },
+
+  species: { majorityShare: 0.5 },
 
   growth: {
     arrivalWakeUps: { bigBlob: 2, tail: 5, legs: 8, teen: 11, adult: 15 }, // LIFE table

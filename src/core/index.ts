@@ -1,3 +1,5 @@
+export { act, canDo } from './actions';
+export type { Action, ActionResult, FoodType, Refusal } from './actions';
 export { advance } from './engine';
 export type { AdvanceResult } from './engine';
 export { defaultContext } from './context';
@@ -8,6 +10,6 @@ export type { Settings } from './settings';
 export { DEFAULT_TUNING } from './config/tuning';
 export type { Tuning } from './config/tuning';
 export { createPet, isHalted, METER_MAX, SCHEMA_VERSION } from './state';
-export type { PetState, Stage, Species, FinalForm, DeathCause, Needs } from './state';
+export type { PetState, Stage, Species, FinalForm, DeathCause, Needs, Diet } from './state';
 export { fixedOffsetLocalTime, systemLocalTime, TICK_MS, TICK_MINUTES } from './time';
 export type { LocalTime, LocalTimeFn } from './time';
