@@ -132,6 +132,7 @@ Rules of the road:
 
 - Dead or final-form pets **stop simulating** (no ticks after that).
 - Ticks are processed **strictly in order**; the 100th tick sees the result of the 99th.
+- Within one check the interval that just ended is accounted for first (need decay at the rate of the state the pet was in), then the schedule is applied at that instant (bedtime, wake-up, morning routine). Decay progress is kept in **integers** (840 units per awake check) because floating-point sums drift at exact boundaries.
 - The engine returns **events** (`grew`, `gotSick`, `becameDirty`, `died`, `woke`, `beep`, …). The UI uses them for sounds and for a **"while you were away" summary** after a long catch-up.
 - A catch-up of 30 days is 2,880 ticks, which is trivial for a modern phone, so it can run synchronously.
 
@@ -245,7 +246,7 @@ CI runs type-check, lint, unit tests, the simulator's invariants, and the e2e sm
 | # | Milestone | Done when |
 |---|-----------|-----------|
 | M0 | Scaffold: repo, Vite + TS, lint, tests, CI | ✅ done: typecheck, lint, format, tests and build pass locally; the CI workflow is written but has not run yet (no GitHub repo) |
-| M1 | **Core engine, part 1**: time grid, counter-based RNG, state, needs decay, sleep/wake, growth, final form | Lifecycle test: a pet grows on the right wake-ups; jump = steps |
+| M1 | **Core engine, part 1**: time grid, counter-based RNG, state, needs decay, sleep/wake, growth, final form | ✅ done: 67 tests, including the lifecycle timeline and jump = steps. Rules covered: TIME-01/02/04/05/06, LIFE-01…05/07, SLEEP-01/05/06/07/11 (attenuation), NEED-01, PACE-01 (decay rates are provisional until M3), CARE-01 (stub) |
 | M2 | **Core engine, part 2**: temperature/AC, dirt, sickness, death, species, weight, all actions | Every rule ID in 08 has a test; refusals complete |
 | M3 | **Simulator and tuning**: headless runs, pacing and death targets | PACE-01, DEATH-05/06 tests pass with defaults |
 | M4 | **UI shell**: SVG shell, LCD canvas, buttons, keyboard, scene builder, audio synth, placeholder art | Playable end to end with text placeholders |
@@ -261,7 +262,7 @@ M1–M3 need **no art and no UI**, so the hardest, most rule-dependent part gets
 
 These are small, but each needs an explicit rule before M2; proposed defaults in brackets.
 
-1. **Hatching at night** while the pet should be asleep [starts awake and goes to bed at the next bedtime; wake-ups count from the first morning after].
+1. **Hatching at night** while the pet should be asleep [**implemented in M1:** it starts asleep and wakes at the next wake-up time, which counts as wake-up 1, as in LIFE-02's edge case. Hatching in the evening before bedtime starts awake].
 2. **Initial values** at hatch: meters, room temperature (25 °C), AC off, light on or off [half-full meters; light off].
 3. **Changing the wake-up time** (TIME-05) [applies from the next wake-up].
 4. **Changing the Jokenpo rounds** mid-game [applies to the next game].

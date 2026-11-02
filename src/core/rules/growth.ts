@@ -1,0 +1,42 @@
+import type { Tuning } from '../config/tuning';
+import type { GameEvent } from '../events';
+import type { PetState, Stage } from '../state';
+import { careVerdict } from './care';
+
+/** The care stage a pet with this many wake-ups belongs to (LIFE table). */
+export function stageForWakeUps(wakeUps: number, tuning: Tuning): Exclude<Stage, 'final'> {
+  const at = tuning.growth.arrivalWakeUps;
+  if (wakeUps >= at.adult) return 'adult';
+  if (wakeUps >= at.teen) return 'teen';
+  if (wakeUps >= at.legs) return 'legs';
+  if (wakeUps >= at.tail) return 'tail';
+  if (wakeUps >= at.bigBlob) return 'bigBlob';
+  return 'smallBlob';
+}
+
+/**
+ * The growth step of the morning routine: called right after a wake-up has been counted
+ * (LIFE-02, LIFE-03). Moves the pet to its next stage, or turns it into its final form on
+ * its drawn wake-up (LIFE-04). The species decision (SPEC) joins here in M2.
+ */
+export function applyMorningGrowth(
+  pet: PetState,
+  atMs: number,
+  tuning: Tuning,
+  events: GameEvent[],
+): void {
+  if (pet.stage === 'final') return;
+
+  if (pet.wakeUps >= pet.finalFormAtWakeUp) {
+    pet.stage = 'final';
+    pet.finalForm = careVerdict(pet);
+    events.push({ type: 'finalForm', atMs, form: pet.finalForm });
+    return;
+  }
+
+  const next = stageForWakeUps(pet.wakeUps, tuning);
+  if (next !== pet.stage) {
+    events.push({ type: 'grew', atMs, from: pet.stage, to: next });
+    pet.stage = next;
+  }
+}
