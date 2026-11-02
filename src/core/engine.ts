@@ -3,8 +3,10 @@ import type { GameEvent } from './events';
 import { updateDangers, updateDirt, rollWakeSickness } from './rules/health';
 import { applyMorningGrowth } from './rules/growth';
 import { decayNeeds } from './rules/needs';
+import { syncOverplay } from './rules/play';
 import { updateSleep } from './rules/sleep';
 import { settleRoomForSleep, updateRoom } from './rules/temperature';
+import { updateWeight } from './rules/weight';
 import type { PetState } from './state';
 import { isHalted } from './state';
 import { tickIndexAt, tickStartMs } from './time';
@@ -56,15 +58,20 @@ function processCheck(pet: PetState, tick: number, ctx: Context, events: GameEve
   const change = updateSleep(pet, ctx.localTime(atMs), ctx.settings, ctx.tuning);
   if (change === 'fellAsleep') {
     settleRoomForSleep(pet, ctx);
+    pet.game = null; // a game does not last through the night
     events.push({ type: 'fellAsleep', atMs });
   } else if (change === 'woke') {
     pet.wakeUps += 1;
     events.push({ type: 'woke', atMs, wakeUps: pet.wakeUps });
+    pet.play.overplayCount = 0; // a new day starts the over-play count afresh (EDU-05)
+    pet.play.overplayThreshold = null;
     rollWakeSickness(pet, ctx, atMs, events);
     applyMorningGrowth(pet, atMs, ctx.tuning, events);
     if (isHalted(pet)) return;
   }
 
   updateDirt(pet, ctx, tick, atMs, !pet.asleep, awakeInterval, events);
+  updateWeight(pet, ctx, tick, atMs, awakeInterval, events);
   updateDangers(pet, ctx, tick, atMs, awakeInterval, events);
+  syncOverplay(pet);
 }

@@ -6,12 +6,18 @@ export interface Settings {
   wakeMinutes: number;
   /** Bedtime of an adult; younger stages go to bed earlier (SLEEP-05/07). */
   adultBedtimeMinutes: number;
+  /** Rounds in a game of Jokenpo, 3 to 5; the majority of the rounds decides the game (PLAY-01). */
+  jokenpoRounds: number;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
   wakeMinutes: clock(7), // proposed default (TIME-05)
   adultBedtimeMinutes: clock(22), // SLEEP-05
+  jokenpoRounds: 3, // PLAY-01 default
 };
+
+/** A game has 3 to 5 rounds (PLAY-01). */
+export const JOKENPO_ROUNDS_RANGE = { min: 3, max: 5 } as const;
 
 /** Wake-up must fall between 06:00 and 09:00 (TIME-05). */
 export const WAKE_RANGE = { min: clock(6), max: clock(9) } as const;
@@ -39,6 +45,15 @@ export function validateSettings(settings: Settings): string[] {
     settings.adultBedtimeMinutes > ADULT_BEDTIME_RANGE.max
   ) {
     errors.push('adult bedtime must be between 20:00 and 23:45');
+  }
+
+  const rounds = settings.jokenpoRounds;
+  if (
+    !Number.isInteger(rounds) ||
+    rounds < JOKENPO_ROUNDS_RANGE.min ||
+    rounds > JOKENPO_ROUNDS_RANGE.max
+  ) {
+    errors.push('a game of Jokenpo has 3 to 5 rounds');
   }
 
   return errors;

@@ -76,6 +76,8 @@ export interface PetState {
   /** Sleeping checks with the light on, since the last wake-up (SLEEP-02/03). */
   nightLightChecks: number;
   room: Room;
+  game: Game | null;
+  play: PlayHistory;
   sick: { sinceMs: number } | null;
   dirt: Dirt;
   /** Running death clocks, by cause (DEATH-07/08). */
@@ -96,6 +98,28 @@ export interface Diet {
   meat: number;
   plant: number;
   noodles: number;
+}
+
+export type Shape = 'rock' | 'paper' | 'scissors';
+
+/** A game of Jokenpo in progress; it ends when all rounds have been played (PLAY-01). */
+export interface Game {
+  /** Which game this is (counting from 0); with the round it keys the pet's hand (rules/play.ts). */
+  index: number;
+  total: number;
+  rounds: { player: Shape; pet: Shape }[];
+}
+
+/** What playing has led to so far (PLAY-04…06, EDU-04/05). */
+export interface PlayHistory {
+  /** Games started so far, finished or not. */
+  gamesStarted: number;
+  /** Games the pet has lost in a row; ties neither add nor break it. */
+  lossStreak: number;
+  /** Games played while happiness was already at the top, since it got there. */
+  overplayCount: number;
+  /** Games it takes before more play costs education: drawn between 3 and 5 when it starts. */
+  overplayThreshold: number | null;
 }
 
 /** The room the pet lives in (TEMP-01…18). */
@@ -189,6 +213,8 @@ export function createPet(params: NewPetParams, ctx: Context): PetState {
       zone: 'ok',
       zoneChecks: 0,
     },
+    game: null,
+    play: { gamesStarted: 0, lossStreak: 0, overplayCount: 0, overplayThreshold: null },
     sick: null,
     dirt: {
       checks: 0,

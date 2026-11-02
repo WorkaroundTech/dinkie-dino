@@ -247,7 +247,7 @@ CI runs type-check, lint, unit tests, the simulator's invariants, and the e2e sm
 |---|-----------|-----------|
 | M0 | Scaffold: repo, Vite + TS, lint, tests, CI | ✅ done: typecheck, lint, format, tests and build pass locally; the CI workflow is written but has not run yet (no GitHub repo) |
 | M1 | **Core engine, part 1**: time grid, counter-based RNG, state, needs decay, sleep/wake, growth, final form | ✅ done: 67 tests, including the lifecycle timeline and jump = steps. Rules covered: TIME-01/02/04/05/06, LIFE-01…05/07, SLEEP-01/05/06/07/11 (attenuation), NEED-01, PACE-01 (decay rates are provisional until M3), CARE-01 (stub) |
-| M2 | **Core engine, part 2**: temperature/AC, dirt, sickness, death, species, weight, all actions | Every rule ID in 08 has a test; refusals complete |
+| M2 | **Core engine, part 2**: temperature/AC, dirt, sickness, death, species, weight, all actions | ✅ done in four commits (actions and species; health; temperature and AC; Jokenpo, weight and conditions): 219 tests and a mutation check of every rule group. Not yet done: the care score (CARE-02 is deferred), pet name/seed generation, migrations, and the pacing numbers, which M3 tunes |
 | M3 | **Simulator and tuning**: headless runs, pacing and death targets | PACE-01, DEATH-05/06 tests pass with defaults |
 | M4 | **UI shell**: SVG shell, LCD canvas, buttons, keyboard, scene builder, audio synth, placeholder art | Playable end to end with text placeholders |
 | M5 | **Persistence and PWA**: IndexedDB, migrations, catch-up summary, service worker, install prompt | Close the app for a day, reopen: pet advanced correctly; works offline |

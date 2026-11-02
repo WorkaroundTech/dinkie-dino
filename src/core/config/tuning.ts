@@ -74,12 +74,34 @@ export interface Tuning {
      * hours (48 checks) plus 12 sleeping hours at 1/6 (8 checks).
      */
     deathOnsetChecks: Record<
-      'sick' | 'hunger' | 'thirst' | 'lowHappiness' | 'tooHot' | 'tooCold',
+      'sick' | 'hunger' | 'thirst' | 'lowHappiness' | 'tooHot' | 'tooCold' | 'tooHeavy',
       Range
     >;
     /** Bath is allowed this many minutes before bedtime (DIRT-06). */
     bathWindowMinutes: number;
   };
+
+  play: {
+    /** Chance of losing a happiness level on each lost game from the second one in a row (PLAY-06). */
+    lossStreakFrom: number;
+    lossHappinessDropChance: number;
+    /** Over-play: games past this many (drawn in this range), played at top happiness, may cost education (EDU-04/05). */
+    overplayThreshold: Range;
+    overplayEducationDropChance: number;
+    /** Weight lost by winning a game, and the lowest weight (Q-WEIGHT-1 default, provisional). */
+    weightLossPerWinKg: number;
+    minWeightKg: number;
+  };
+
+  weight: {
+    /** Heavier than this is too heavy, by stage (WEIGHT-01, provisional until Q-WEIGHT-1). */
+    heavyAboveKg: Record<CareStage, number>;
+    /** Chance per awake check that a too heavy pet falls sick: higher before adulthood. */
+    sickChancePerCheck: { preAdult: number; adult: number };
+  };
+
+  /** Meter values at which the pet shows a condition (COND-03, Q-COND-1 defaults). */
+  conditions: { hungryAtOrBelow: number; thirstyAtOrBelow: number; sadAtOrBelow: number };
 
   temperature: {
     /** Room temperature after hatching, in the comfort band (Q-AC-1). */
@@ -163,6 +185,23 @@ export const DEFAULT_TUNING: Tuning = {
     educateGain: 1,
   },
 
+  play: {
+    lossStreakFrom: 2, // PLAY-06
+    lossHappinessDropChance: 0.5, // PLAY-06
+    overplayThreshold: { min: 3, max: 5 }, // EDU-04
+    overplayEducationDropChance: 0.5, // EDU-05
+    weightLossPerWinKg: 1,
+    minWeightKg: 1,
+  },
+
+  weight: {
+    // Provisional: the start weight is 5 kg and Ice Cream adds 1 kg (Q-WEIGHT-1).
+    heavyAboveKg: { smallBlob: 8, bigBlob: 12, tail: 16, legs: 20, teen: 28, adult: 36 },
+    sickChancePerCheck: { preAdult: 0.03, adult: 0.01 },
+  },
+
+  conditions: { hungryAtOrBelow: 2, thirstyAtOrBelow: 2, sadAtOrBelow: 0 },
+
   temperature: {
     start: 25,
     min: 16,
@@ -198,6 +237,7 @@ export const DEFAULT_TUNING: Tuning = {
       lowHappiness: { min: 56, max: 112 }, // lowest level for 1 to 2 days
       tooHot: { min: 24, max: 32 }, // 6 to 8 h
       tooCold: { min: 24, max: 32 }, // 6 to 8 h
+      tooHeavy: { min: 56, max: 112 }, // 1 to 2 days (provisional)
     },
     bathWindowMinutes: 60, // DIRT-06
   },

@@ -87,7 +87,7 @@ describe('sleep and wake-up in the engine (SLEEP-01, LIFE-02)', () => {
 
   it('respects a different configured wake-up time (TIME-05)', () => {
     const late = testContext({
-      settings: { wakeMinutes: 8 * 60 + 30, adultBedtimeMinutes: 22 * 60 },
+      settings: { ...ctx.settings, wakeMinutes: 8 * 60 + 30 },
     });
     const pet = createPet({ id: 'p', name: 'T', seed: 1, nowMs: at(0, 15) }, late);
     expect(advance(pet, at(1, 8, 15), late).state.wakeUps).toBe(0);

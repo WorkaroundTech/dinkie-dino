@@ -3,15 +3,17 @@ import type { GameEvent } from './events';
 import { chance } from './rng';
 import { bathOpen, bathe, cure } from './rules/health';
 import { raise } from './rules/meters';
+import { playRound, syncOverplay } from './rules/play';
 import { toggleAc } from './rules/temperature';
-import type { PetState } from './state';
+import type { PetState, Shape } from './state';
 import { METER_MAX, isHalted } from './state';
 
 export type FoodType = 'hamburger' | 'chicken' | 'apple' | 'carrot' | 'iceCream' | 'noodles';
 
 /**
  * What the player can do. Check and Clock only look at things, so they never change the pet
- * and are always allowed. More actions arrive with the rules they depend on.
+ * and are always allowed. Play is one round of Jokenpo at a time: the player's shape in, the pet's
+ * hidden hand drawn at random; the last round of the configured number ends the game. More actions arrive with the rules they depend on.
  */
 export type Action =
   | { kind: 'drink' }
@@ -21,6 +23,8 @@ export type Action =
   | { kind: 'educate' }
   | { kind: 'bath' }
   | { kind: 'ac' }
+  | { kind: 'play'; shape: Shape }
+  | { kind: 'stopPlay' }
   | { kind: 'medical' }
   | { kind: 'check' }
   | { kind: 'clock' };
@@ -42,7 +46,14 @@ export interface ActionResult {
 }
 
 const WORKS_ASLEEP = new Set<Action['kind']>(['lamp', 'check', 'clock']);
-const REFUSED_WHEN_SICK = new Set<Action['kind']>(['drink', 'food', 'educate', 'pet', 'bath']);
+const REFUSED_WHEN_SICK = new Set<Action['kind']>([
+  'drink',
+  'food',
+  'educate',
+  'pet',
+  'bath',
+  'play',
+]);
 
 /** The meal group a food belongs to for the species rule (SPEC); Ice Cream belongs to none. */
 const FOOD_GROUP: Record<FoodType, 'meat' | 'plant' | 'noodles' | null> = {
@@ -140,11 +151,20 @@ export function act(
       toggleAc(state, ctx, nowMs, events);
       break;
 
+    case 'play':
+      playRound(state, action.shape, ctx, nowMs, events);
+      break;
+
+    case 'stopPlay':
+      state.game = null; // leaving a game has no penalty (PLAY-10)
+      break;
+
     case 'check':
     case 'clock':
       break;
   }
 
+  syncOverplay(state);
   events.push({ type: 'acted', atMs: nowMs, action });
   return { state, events, refused: null };
 }

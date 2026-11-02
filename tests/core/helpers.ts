@@ -43,6 +43,15 @@ export function calmTuning(): Tuning {
     lowHappiness: never,
     tooHot: never,
     tooCold: never,
+    tooHeavy: never,
+  };
+  tuning.weight.heavyAboveKg = {
+    smallBlob: 1e9,
+    bigBlob: 1e9,
+    tail: 1e9,
+    legs: 1e9,
+    teen: 1e9,
+    adult: 1e9,
   };
   tuning.temperature.moveChance = 0; // the room stays at 25 degrees
   return tuning;

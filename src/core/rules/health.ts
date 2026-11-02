@@ -6,6 +6,7 @@ import type { DeathCause, PetState } from '../state';
 import { bedtimeMinutes } from './sleep';
 import { lower } from './meters';
 import { DECAY_SCALE } from './needs';
+import { isTooHeavy } from './weight';
 import type { LocalTime } from '../time';
 
 /** The chance of the n-th roll of an escalating check: 20%, 30%, 40%, ... up to 100% (COND-06). */
@@ -21,6 +22,7 @@ export function becomeSick(
 ): void {
   if (pet.sick || pet.dead) return;
   pet.sick = { sinceMs: atMs };
+  pet.game = null; // a sick pet stops playing
   events.push({ type: 'gotSick', atMs, cause });
 }
 
@@ -150,10 +152,11 @@ const CLOCK_CAUSES: readonly ClockCause[] = [
   'lowHappiness',
   'tooHot',
   'tooCold',
+  'tooHeavy',
 ];
 
 /** Whether the condition behind a death cause currently holds. */
-function inDanger(pet: Readonly<PetState>, cause: ClockCause): boolean {
+function inDanger(pet: Readonly<PetState>, cause: ClockCause, ctx: Context): boolean {
   switch (cause) {
     case 'sick':
       return pet.sick !== null;
@@ -167,6 +170,8 @@ function inDanger(pet: Readonly<PetState>, cause: ClockCause): boolean {
       return pet.room.zone === 'tooHot';
     case 'tooCold':
       return pet.room.zone === 'tooCold';
+    case 'tooHeavy':
+      return isTooHeavy(pet, ctx);
   }
 }
 
@@ -193,7 +198,7 @@ export function updateDangers(
     : Math.round(DECAY_SCALE / ctx.tuning.needs.sleepAttenuation);
 
   for (const cause of CLOCK_CAUSES) {
-    if (!inDanger(pet, cause)) {
+    if (!inDanger(pet, cause, ctx)) {
       Reflect.deleteProperty(pet.dangers, cause);
       continue;
     }

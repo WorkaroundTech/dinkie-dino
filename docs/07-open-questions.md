@@ -87,7 +87,7 @@ Unruled blog points: C10 lights-on chance, C11 Angel/Demon death, C13 weight in 
 | ID | Question | Why I'm asking | Proposed default |
 |----|----------|----------------|------------------|
 | **Q-DIRT-6** | On each dirty check, does happiness drop **by one level every 15 minutes** (reaching VerySad within an hour) or **once** when the checks start? If the pet is cured but still dirty, do the dirty checks resume from 20%? | DIRT-10 | −1 level per check; they resume. |
-| **Q-DEATH-3** | Death-check numbers and meaning: (a) the chance per check once the onset passes (default 20% +10% per check); (b) does the onset timer count the sleeping hours; (c) what "low happiness" means (the lowest level?) and what "hunger for too long" means (empty, or below a threshold?). | DEATH-07/08 | (a) 20%, +10%; (b) yes, real time; (c) lowest level; empty. |
+| **Q-DEATH-3** | Death-check numbers and meaning: (a) the chance per check once the onset passes (default 20% +10% per check); (b) does the onset timer count the sleeping hours (implementation changed the default to **an attenuated night**, so a night does not make the morning lethal, see DEATH-08); (c) what "low happiness" means (the lowest level?) and what "hunger for too long" means (empty, or below a threshold?). | DEATH-07/08 | (a) 20%, +10%; (b) attenuated, see DEATH-08; (c) lowest level; empty. |
 | **Q-SLEEP-7** | Remaining night details: (a) comfort reset at **bedtime** to **25 °C**; (b) the AC stays as the player left it. | SLEEP-10 | Both yes. |
 
 ## Tuning backlog (not questions)

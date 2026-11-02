@@ -4,7 +4,7 @@ A browser/PWA recreation of the "Rakuraku Dinokun" (a.k.a. _Dinkie Dino_) virtua
 Tamagotchi clone that was popular in Brazil. The original was an Android app (Java/Eclipse, 2014–2015);
 this project brings it to the web as an installable PWA.
 
-**Current phase: specification complete enough to build; architecture approved (doc 13); milestones M0 (scaffold) and M1 (core engine, part 1) done, M2 (remaining rules and actions) next.**
+**Current phase: specification complete enough to build; architecture approved (doc 13); milestones M0 (scaffold), M1 and M2 (the core engine: every rule decided so far) done, M3 (simulator and tuning) next.**
 
 The app is called **Dinkie Dino** (the project folder is still named `rakuraku-dinokun-web`). The two historical names, _Dinkie Dino_ and _Rakuraku Dinokun_, belong to the 90s bootleg toys this recreates; all art, code and sound here are original.
 
