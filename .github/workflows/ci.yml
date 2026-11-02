@@ -24,3 +24,4 @@ jobs:
       - run: npm run format:check
       - run: npm test
       - run: npm run build
+      - run: npm run sim -- --lives 5 --players twice,hourly

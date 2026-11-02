@@ -26,14 +26,22 @@ export interface AdvanceResult {
  */
 export function advance(pet: Readonly<PetState>, toMs: number, ctx: Context): AdvanceResult {
   const state = structuredClone(pet) as PetState;
-  const events: GameEvent[] = [];
-
-  const last = tickIndexAt(toMs);
-  for (let tick = state.lastCheckIndex + 1; tick <= last && !isHalted(state); tick++) {
-    processCheck(state, tick, ctx, events);
-    state.lastCheckIndex = tick;
-  }
+  const events = advanceInPlace(state, toMs, ctx);
   return { state, events };
+}
+
+/**
+ * The same as `advance`, but changes `pet` itself instead of returning a copy, and returns only the
+ * events. For tools that run millions of checks (the simulator); the app uses `advance`.
+ */
+export function advanceInPlace(pet: PetState, toMs: number, ctx: Context): GameEvent[] {
+  const events: GameEvent[] = [];
+  const last = tickIndexAt(toMs);
+  for (let tick = pet.lastCheckIndex + 1; tick <= last && !isHalted(pet); tick++) {
+    processCheck(pet, tick, ctx, events);
+    pet.lastCheckIndex = tick;
+  }
+  return events;
 }
 
 /**

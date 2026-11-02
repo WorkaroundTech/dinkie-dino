@@ -2,7 +2,7 @@ import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['dist/', 'coverage/', 'node_modules/', 'playwright-report/'] },
+  { ignores: ['dist/', 'dist-sim/', 'coverage/', 'node_modules/', 'playwright-report/'] },
   js.configs.recommended,
   ...tseslint.configs.strict,
   {

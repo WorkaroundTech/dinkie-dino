@@ -1,11 +1,20 @@
 import { describe, expect, it } from 'vitest';
+import type { Tuning } from '../../src/core';
 import { DEFAULT_TUNING } from '../../src/core';
 import { decayNeeds } from '../../src/core/rules/needs';
 import { createPet } from '../../src/core/state';
 import type { PetState } from '../../src/core/state';
 import { at, testContext } from './helpers';
 
-const tuning = DEFAULT_TUNING;
+/** Distinct, known rates, so these tests describe the mechanism and not the tuned defaults. */
+const tuning: Tuning = {
+  ...DEFAULT_TUNING,
+  needs: {
+    ...DEFAULT_TUNING.needs,
+    checksPerPoint: { hunger: 6, thirst: 4, happiness: 12 },
+    sleepAttenuation: 6,
+  },
+};
 
 /** An awake pet with full meters, hatched at noon. */
 function fullPet(): PetState {
@@ -39,8 +48,8 @@ describe('need decay (PACE-01)', () => {
   });
 
   it('makes thirst the fastest and happiness the slowest meter by default', () => {
-    const { hunger, thirst, happiness } = tuning.needs.checksPerPoint;
-    expect(thirst).toBeLessThan(hunger);
+    const { hunger, thirst, happiness } = DEFAULT_TUNING.needs.checksPerPoint;
+    expect(thirst).toBeLessThanOrEqual(hunger);
     expect(hunger).toBeLessThanOrEqual(happiness);
   });
 

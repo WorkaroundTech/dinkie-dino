@@ -2,7 +2,7 @@ export { act, canDo } from './actions';
 export type { Action, ActionResult, FoodType, Refusal } from './actions';
 export { conditionsOf, displayCondition, needsAttention } from './rules/conditions';
 export type { Condition } from './rules/conditions';
-export { advance } from './engine';
+export { advance, advanceInPlace } from './engine';
 export type { AdvanceResult } from './engine';
 export { defaultContext } from './context';
 export type { Context } from './context';

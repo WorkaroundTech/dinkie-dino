@@ -314,6 +314,11 @@ describe('the clock (TIME-04)', () => {
 });
 
 describe('needs over a night (SLEEP-11)', () => {
+  // Known rates (thirst: a point per 4 awake checks), whatever the tuned defaults are.
+  const rates = calmContext(undefined, (t) => {
+    t.needs.checksPerPoint = { hunger: 6, thirst: 4, happiness: 12 };
+  });
+  const ctx = rates;
   it('decays slowly while the pet sleeps', () => {
     const pet = newPet(at(0, 22)); // asleep
     expect(pet.asleep).toBe(true);
