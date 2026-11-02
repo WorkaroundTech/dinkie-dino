@@ -23,6 +23,8 @@ export interface Player {
   tracksAc: boolean;
   /** Whether the player gives food, water, affection and games. False looks after everything else. */
   feeds: boolean;
+  /** Stops visiting this many hours after hatching and never comes back: a trip. */
+  leavesAfterHours?: number;
 }
 
 /** The local minutes of the day at which this player visits a pet in its present stage. */
@@ -55,7 +57,7 @@ const SHAPES: readonly Shape[] = ['rock', 'paper', 'scissors'];
 
 /**
  * One visit: give medicine if sick, fill the water and food, pet it, play a game if it is not at
- * its happiest, give a bath if it is dirty, fix the air conditioning, and switch the light off.
+ * its happiest, take a bath when it is open, fix the air conditioning, and switch the light off.
  * Only actions the pet would accept are tried, so the log counts real care, not refusals.
  */
 export function runSession(
@@ -81,7 +83,13 @@ export function runSession(
 
     const foods = FOODS[player.diet];
     for (let meal = 0; meal < 10 && pet.needs.hunger < 8; meal++) {
-      const food = foods[(pet.actionCounter + meal) % foods.length];
+      // The next food in the rotation that the pet will accept (it refuses what does not suit its species).
+      const food = foods
+        .map((_, i) => foods[(pet.actionCounter + meal + i) % foods.length])
+        .find(
+          (f): f is FoodType =>
+            f !== undefined && canDo(pet, { kind: 'food', food: f }, nowMs, ctx) === null,
+        );
       if (!food || !tryAction({ kind: 'food', food })) break;
     }
 
@@ -97,9 +105,9 @@ export function runSession(
     }
   }
 
-  // Bathe when the pet is dirty, not just because the pre-bed window is open: a bath in the evening
-  // window restarts a 16 to 20 hour timer that then runs out around midday.
-  if (pet.dirt.dirty) tryAction({ kind: 'bath' });
+  // Bathe whenever the bath is open: when the pet is dirty, or in the hour before bedtime. With a 20 to
+  // 24 hour dirt timer, a bath at bedtime each day keeps the pet clean for most of the next day.
+  tryAction({ kind: 'bath' });
 
   if (player.tracksAc) {
     const { band } = ctx.tuning.temperature;
@@ -114,10 +122,10 @@ export function runSession(
   return pet;
 }
 
-function everyHour(fromWakeMinutes: number, count: number): SessionTime[] {
+function everyHour(fromWakeMinutes: number, count: number, stepMinutes = 60): SessionTime[] {
   return Array.from({ length: count }, (_, i) => ({
     from: 'wake' as const,
-    afterMinutes: fromWakeMinutes + i * 60,
+    afterMinutes: fromWakeMinutes + i * stepMinutes,
   }));
 }
 
@@ -136,28 +144,34 @@ export function builtInPlayers(diet: DietPlan = 'mixed'): Player[] {
     make(
       'unfed',
       [
-        { from: 'wake', afterMinutes: 60 },
+        { from: 'wake', afterMinutes: 30 },
         { from: 'wake', afterMinutes: 360 },
         { from: 'bed', beforeMinutes: 45 },
       ],
       true,
       false,
     ),
-    make('morning', [{ from: 'wake', afterMinutes: 60 }]),
+    make('morning', [{ from: 'wake', afterMinutes: 30 }]),
     make('evening', [{ from: 'bed', beforeMinutes: 45 }]),
     make('twice', [
-      { from: 'wake', afterMinutes: 60 },
+      { from: 'wake', afterMinutes: 30 },
       { from: 'bed', beforeMinutes: 45 },
     ]),
     make('thrice', [
-      { from: 'wake', afterMinutes: 60 },
-      { from: 'wake', afterMinutes: 360 },
+      { from: 'wake', afterMinutes: 30 },
+      { from: 'wake', afterMinutes: 330 },
       { from: 'bed', beforeMinutes: 45 },
     ]),
+    // Visits spaced evenly through the awake day: the AC sets how far apart they may be.
+    make('every4h', everyHour(30, 4, 240)),
+    make('every8h', everyHour(30, 2, 480)),
     make('hourly', everyHour(0, 16)),
     make(
       'quarterly',
       Array.from({ length: 64 }, (_, i) => ({ from: 'wake' as const, afterMinutes: i * 15 })),
     ),
+    // Cared for every hour for three days, then gone for a day or two: how a trip fares.
+    { ...make('away24', everyHour(0, 16)), leavesAfterHours: 72 },
+    { ...make('away48', everyHour(0, 16)), leavesAfterHours: 72 },
   ];
 }

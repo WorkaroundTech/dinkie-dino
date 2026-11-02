@@ -54,7 +54,6 @@ export interface DecayProgress {
 export interface PetState {
   schemaVersion: number;
   id: string;
-  name: string;
   /** Seed for counter-based randomness (rng.ts). Never changes. */
   seed: number;
   /** UTC ms at which the pet hatched. */
@@ -170,7 +169,6 @@ export interface Danger {
 
 export interface NewPetParams {
   id: string;
-  name: string;
   seed: number;
   /** The moment of hatching, UTC ms. */
   nowMs: number;
@@ -193,7 +191,6 @@ export function createPet(params: NewPetParams, ctx: Context): PetState {
   return {
     schemaVersion: SCHEMA_VERSION,
     id: params.id,
-    name: params.name,
     seed: params.seed,
     bornAtMs: params.nowMs,
     stage: 'smallBlob',
@@ -204,7 +201,7 @@ export function createPet(params: NewPetParams, ctx: Context): PetState {
     finalForm: null,
     dead: null,
     asleep,
-    lightOn: false, // Q-START-1 default
+    lightOn: true, // round 16: a new pet starts with the light on
     nightLightChecks: 0,
     room: {
       tempC: tuning.temperature.start,

@@ -15,7 +15,7 @@ const NOW = at(0, 12);
 
 /** A content pet: every meter comfortably high, nothing wrong. */
 function content(): PetState {
-  const pet = createPet({ id: 'p', name: 'Test', seed: 1, nowMs: NOW }, ctx);
+  const pet = createPet({ id: 'p', seed: 1, nowMs: NOW }, ctx);
   pet.needs = { hunger: 6, thirst: 6, happiness: 3, education: 2, weightKg: 5 };
   return pet;
 }
@@ -26,15 +26,24 @@ describe('what the pet shows (COND-01)', () => {
     expect(displayCondition(content(), ctx)).toBeNull();
   });
 
-  it('is hungry at 2 of 8 or below, and thirsty likewise', () => {
+  it('is hungry or thirsty only when the meter is completely empty (round 15)', () => {
     const pet = content();
-    pet.needs.hunger = 3;
-    pet.needs.thirst = 3;
+    pet.needs.hunger = 1;
+    pet.needs.thirst = 1;
     expect(conditionsOf(pet, ctx)).toEqual([]);
-    pet.needs.hunger = 2;
+    pet.needs.hunger = 0;
     expect(conditionsOf(pet, ctx)).toEqual(['hungry']);
     pet.needs.thirst = 0;
     expect(conditionsOf(pet, ctx)).toEqual(['hungry', 'thirsty']);
+  });
+
+  it('shows no sprite for hungry or thirsty, only the beep and the Check screen (round 15)', () => {
+    const pet = content();
+    pet.needs.hunger = 0;
+    pet.needs.thirst = 0;
+    expect(conditionsOf(pet, ctx)).toEqual(['hungry', 'thirsty']);
+    expect(displayCondition(pet, ctx)).toBeNull();
+    expect(needsAttention(pet, ctx)).toBe(true);
   });
 
   it('is sad only at the lowest happiness', () => {
@@ -68,7 +77,7 @@ describe('what the pet shows (COND-01)', () => {
     expect(conditionsOf(dirty, ctx)).toEqual(['dirty']);
   });
 
-  it('lists the most urgent first, and displays that one (proposed order)', () => {
+  it('lists the most urgent first and displays that one: sick, too cold / too hot, sad, dirty (round 15)', () => {
     const pet = content();
     pet.sick = { sinceMs: NOW };
     pet.room.zone = 'tooHot';
@@ -76,21 +85,31 @@ describe('what the pet shows (COND-01)', () => {
     pet.needs.thirst = 0;
     pet.needs.happiness = 0;
     pet.dirt.dirty = { sinceMs: NOW, checks: 0, onsetChecks: 8, rolls: 0, sickRollsStopped: false };
-    expect(conditionsOf(pet, ctx)).toEqual(['sick', 'tooHot', 'hungry', 'thirsty', 'dirty', 'sad']);
+    expect(conditionsOf(pet, ctx)).toEqual(['sick', 'tooHot', 'sad', 'dirty', 'hungry', 'thirsty']);
     expect(displayCondition(pet, ctx)).toBe('sick');
+
+    pet.sick = null;
+    expect(displayCondition(pet, ctx)).toBe('tooHot');
+    pet.room.zone = 'ok';
+    expect(displayCondition(pet, ctx)).toBe('sad');
+    pet.needs.happiness = 2;
+    expect(displayCondition(pet, ctx)).toBe('dirty');
+    pet.dirt.dirty = null;
+    expect(displayCondition(pet, ctx)).toBeNull(); // hungry and thirsty have no sprite
   });
 
   it('leaves a cured pet hungry, thirsty and sad, all calling for care (MED-03)', () => {
     const sick: PetState = { ...content(), sick: { sinceMs: NOW } };
     const cured = act(sick, { kind: 'medical' }, NOW, ctx).state;
-    expect(conditionsOf(cured, ctx)).toEqual(['hungry', 'thirsty', 'sad']);
+    expect(conditionsOf(cured, ctx)).toEqual(['sad', 'hungry', 'thirsty']);
+    expect(displayCondition(cured, ctx)).toBe('sad');
   });
 
   it('follows the pet as time goes by', () => {
     let pet = content();
-    pet.needs.thirst = 3;
+    pet.needs.thirst = 1;
     expect(conditionsOf(pet, ctx)).toEqual([]);
-    pet = advance(pet, at(0, 14), ctx).state; // 8 awake checks: two thirst points
+    pet = advance(pet, at(0, 14), ctx).state; // 8 awake checks: the last point drains
     expect(conditionsOf(pet, ctx)).toEqual(['thirsty']);
   });
 });
@@ -104,7 +123,7 @@ describe('calling for attention (COND-02)', () => {
   });
 
   it('stays quiet while asleep', () => {
-    const asleep = createPet({ id: 'p', name: 'T', seed: 1, nowMs: at(0, 23) }, ctx);
+    const asleep = createPet({ id: 'p', seed: 1, nowMs: at(0, 23) }, ctx);
     asleep.needs.hunger = 0;
     expect(asleep.asleep).toBe(true);
     expect(needsAttention(asleep, ctx)).toBe(false);

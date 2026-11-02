@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Action, PetState } from '../../src/core';
+import type { Action, FoodType, PetState } from '../../src/core';
 import { act, advance, canDo, createPet } from '../../src/core';
 import { at, calmContext, testContext } from './helpers';
 
@@ -7,7 +7,7 @@ const ctx = testContext();
 const NOW = at(0, 12);
 
 function pet(seed = 1, nowMs = NOW): PetState {
-  return createPet({ id: 'p', name: 'Test', seed, nowMs }, ctx);
+  return createPet({ id: 'p', seed, nowMs }, ctx);
 }
 
 /** Runs an action that must be carried out. */
@@ -92,21 +92,14 @@ describe('ice cream (ICE-01…04)', () => {
     expect(ok(p, iceCream).state.needs.happiness).toBe(4); // never lowers it either
   });
 
-  it('adds weight 70% of the time (ICE-03), replayably', () => {
+  it('always adds weight: it is hyper-caloric (round 15)', () => {
+    const gain = ctx.tuning.weight.gainKg;
     let p = pet(11);
-    let heavier = 0;
-    const n = 4000;
-    for (let i = 0; i < n; i++) {
+    for (let i = 0; i < 20; i++) {
       const before = p.needs.weightKg;
       p = ok(p, iceCream).state;
-      if (p.needs.weightKg > before) heavier++;
+      expect(p.needs.weightKg).toBeCloseTo(before + gain);
     }
-    expect(Math.abs(heavier / n - 0.7)).toBeLessThan(0.03);
-
-    // The same history gives the same weight.
-    let q = pet(11);
-    for (let i = 0; i < n; i++) q = ok(q, iceCream).state;
-    expect(q.needs.weightKg).toBe(p.needs.weightKg);
   });
 
   it('does not count toward the species diet', () => {
@@ -156,13 +149,13 @@ describe('pet and educate (HAP-01, EDU-02, EDU-03)', () => {
 });
 
 describe('lamp', () => {
-  it('toggles the light', () => {
+  it('toggles the light; a new pet starts with it on (round 15)', () => {
     let p = pet();
-    expect(p.lightOn).toBe(false);
-    p = ok(p, { kind: 'lamp' }).state;
     expect(p.lightOn).toBe(true);
     p = ok(p, { kind: 'lamp' }).state;
     expect(p.lightOn).toBe(false);
+    p = ok(p, { kind: 'lamp' }).state;
+    expect(p.lightOn).toBe(true);
   });
 });
 
@@ -220,5 +213,95 @@ describe('purity', () => {
   it('produces an event for a carried-out action', () => {
     const { events } = ok(pet(), { kind: 'drink' });
     expect(events).toEqual([{ type: 'acted', atMs: NOW, action: { kind: 'drink' } }]);
+  });
+});
+
+describe('weight from food (round 15)', () => {
+  const food = (f: FoodType): Action => ({ kind: 'food', food: f });
+  /** Hungry enough to eat, so a refusal for being full never gets in the way. */
+  const hungry = (seed = 1): PetState => {
+    const p = pet(seed);
+    p.needs.hunger = 0;
+    p.needs.weightKg = 5; // inside the healthy range of a small blob (4 to 6)
+    return p;
+  };
+  const gainRate = (f: FoodType): number => {
+    let heavier = 0;
+    const n = 4000;
+    for (let seed = 1; seed <= n; seed++) {
+      if (ok(hungry(seed), food(f)).state.needs.weightKg > 5) heavier++; // started at 5 kg
+    }
+    return heavier / n;
+  };
+
+  it('caloric foods (Apple, Hamburger, Noodles) add weight about 75% of the time', () => {
+    for (const f of ['apple', 'hamburger', 'noodles'] as const) {
+      expect(Math.abs(gainRate(f) - 0.75), f).toBeLessThan(0.03);
+    }
+  });
+
+  it('non-caloric foods (Carrot, Chicken Thigh) do not add weight to a healthy pet', () => {
+    for (const f of ['carrot', 'chicken'] as const) expect(gainRate(f), f).toBe(0);
+  });
+
+  it('but they help a pet that is below its healthy range', () => {
+    const gain = ctx.tuning.weight.gainKg;
+    const thin = hungry();
+    thin.needs.weightKg = 3; // below 4
+    expect(ok(thin, food('carrot')).state.needs.weightKg).toBeCloseTo(3 + gain);
+    expect(ok(thin, food('chicken')).state.needs.weightKg).toBeCloseTo(3 + gain);
+  });
+
+  it('and not to one that is close to overweight', () => {
+    const heavy = hungry();
+    heavy.needs.weightKg = 7;
+    expect(ok(heavy, food('carrot')).state.needs.weightKg).toBe(7);
+  });
+
+  it('gives the same outcome for the same history', () => {
+    expect(ok(hungry(9), food('apple')).state).toEqual(ok(hungry(9), food('apple')).state);
+  });
+});
+
+describe('what each species accepts (round 15)', () => {
+  const as = (species: 'trex' | 'bronto' | 'triceratops'): PetState => {
+    const p = pet();
+    p.stage = 'tail';
+    p.species = species;
+    p.needs.hunger = 0;
+    return p;
+  };
+
+  it('a T-Rex refuses plants and noodles even when hungry; a Brontosaurus refuses meat and noodles', () => {
+    for (const f of ['apple', 'carrot', 'noodles'] as const) {
+      expect(canDo(as('trex'), { kind: 'food', food: f }, NOW, ctx), f).toBe('notForSpecies');
+    }
+    for (const f of ['hamburger', 'chicken', 'noodles'] as const) {
+      expect(canDo(as('bronto'), { kind: 'food', food: f }, NOW, ctx), f).toBe('notForSpecies');
+    }
+  });
+
+  it('each eats its own foods and everyone eats Ice Cream', () => {
+    for (const f of ['hamburger', 'chicken', 'iceCream'] as const) {
+      expect(canDo(as('trex'), { kind: 'food', food: f }, NOW, ctx), f).toBeNull();
+    }
+    for (const f of ['apple', 'carrot', 'iceCream'] as const) {
+      expect(canDo(as('bronto'), { kind: 'food', food: f }, NOW, ctx), f).toBeNull();
+    }
+  });
+
+  it('a Triceratops, "pasta / everything", accepts all of them (an assumption)', () => {
+    for (const f of ['hamburger', 'chicken', 'apple', 'carrot', 'noodles', 'iceCream'] as const) {
+      expect(canDo(as('triceratops'), { kind: 'food', food: f }, NOW, ctx), f).toBeNull();
+    }
+  });
+
+  it('before the species is known, anything goes: the diet decides it', () => {
+    const young = pet();
+    young.needs.hunger = 0;
+    expect(young.species).toBeNull();
+    for (const f of ['hamburger', 'chicken', 'apple', 'carrot', 'noodles', 'iceCream'] as const) {
+      expect(canDo(young, { kind: 'food', food: f }, NOW, ctx), f).toBeNull();
+    }
   });
 });

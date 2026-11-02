@@ -24,7 +24,7 @@ describe('overrides', () => {
     ]);
     expect(tuning.temperature.moveChance).toBe(0.06);
     expect(tuning.needs.checksPerPoint.hunger).toBe(9);
-    expect(DEFAULT_TUNING.temperature.moveChance).not.toBe(0.06);
+    expect(DEFAULT_TUNING.temperature.moveChance).not.toBe(0.04);
   });
 
   it.each([
@@ -66,6 +66,18 @@ describe('statistics', () => {
         sad: 0,
       },
       actions: { drink: 2 },
+      sickBy: {},
+      careMistakes: {
+        sick: 0,
+        tooCold: 0,
+        tooHot: 0,
+        hungry: 0,
+        thirsty: 0,
+        dirty: 0,
+        sad: 0,
+        lightOn: 0,
+      },
+      carePoints: 0,
     };
     const s = summarize([
       { ...base, seed: 1, outcome: 'final', hoursLived: 400, wakeUps: 17, species: 'trex' },
@@ -94,12 +106,12 @@ describe('statistics', () => {
 
 describe('players', () => {
   const ctx = testContext();
-  const pet = createPet({ id: 'p', name: 'T', seed: 1, nowMs: HATCH }, ctx);
+  const pet = createPet({ id: 'p', seed: 1, nowMs: HATCH }, ctx);
 
-  it('visit twice a day: an hour after waking and 45 minutes before bed', () => {
-    expect(sessionMinutes(player('twice'), pet, ctx)).toEqual([8 * 60, 18 * 60 + 15]); // a blob sleeps at 19:00
+  it('visit twice a day: half an hour after waking (inside the morning bath window) and 45 minutes before bed', () => {
+    expect(sessionMinutes(player('twice'), pet, ctx)).toEqual([7 * 60 + 30, 18 * 60 + 15]); // a blob sleeps at 19:00
     expect(sessionMinutes(player('twice'), { ...pet, stage: 'adult' }, ctx)).toEqual([
-      8 * 60,
+      7 * 60 + 30,
       21 * 60 + 15,
     ]);
   });
@@ -191,10 +203,16 @@ describe('the report', () => {
     }));
     const text = formatReport(results, 'A title');
     expect(text.startsWith('A title')).toBe(true);
-    for (const heading of ['Causes of death', 'Species', 'Lifespan histogram', 'visits/day']) {
+    for (const heading of [
+      'Causes of death',
+      'Species',
+      'Sicknesses per life',
+      'Lifespan histogram',
+      'visits/day',
+    ]) {
       expect(text).toContain(heading);
     }
-    expect((text.match(/^absent/gm) ?? []).length).toBe(4);
-    expect((text.match(/^twice/gm) ?? []).length).toBe(4);
+    expect((text.match(/^absent/gm) ?? []).length).toBe(7);
+    expect((text.match(/^twice/gm) ?? []).length).toBe(7);
   });
 });

@@ -18,7 +18,7 @@ const tuning: Tuning = {
 
 /** An awake pet with full meters, hatched at noon. */
 function fullPet(): PetState {
-  const pet = createPet({ id: 'p', name: 'Test', seed: 1, nowMs: at(0, 12) }, testContext());
+  const pet = createPet({ id: 'p', seed: 1, nowMs: at(0, 12) }, testContext());
   pet.needs.hunger = 8;
   pet.needs.thirst = 8;
   pet.needs.happiness = 4;

@@ -11,7 +11,7 @@ function hatch(
   seed = 1,
   stage: Stage = 'smallBlob',
 ): PetState {
-  return { ...createPet({ id: `p${seed}`, name: 'Test', seed, nowMs: NOW }, ctx), stage };
+  return { ...createPet({ id: `p${seed}`, seed, nowMs: NOW }, ctx), stage };
 }
 
 describe('too heavy (WEIGHT-01)', () => {
@@ -101,7 +101,7 @@ describe('dying of the weight (DEATH-01)', () => {
     const ctx = calmContext(undefined, (t) => {
       t.weight.heavyAboveKg = { smallBlob: 8, bigBlob: 8, tail: 8, legs: 8, teen: 8, adult: 8 };
       t.health.deathOnsetChecks.tooHeavy = { min: 8, max: 8 };
-      t.health.escalation = { start: 1, step: 0 };
+      t.health.deathEscalation = { start: 1, step: 0 };
     });
     const pet = hatch(ctx);
     pet.needs.weightKg = 20;

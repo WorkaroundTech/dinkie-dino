@@ -56,8 +56,7 @@ function play(pet: PetState, to: number, ctx: Context, stepwise: boolean): Run {
 
 describe('a very diligent player', () => {
   const ctx = testContext();
-  const hatch = (seed: number) =>
-    createPet({ id: `p${seed}`, name: 'Test', seed, nowMs: at(0, 12) }, ctx);
+  const hatch = (seed: number) => createPet({ id: `p${seed}`, seed, nowMs: at(0, 12) }, ctx);
 
   it('keeps the pet alive all the way to its final form (LIFE-07)', () => {
     for (const seed of [1, 2, 3, 4, 5]) {

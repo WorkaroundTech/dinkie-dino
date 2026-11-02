@@ -22,8 +22,25 @@ export function updateWeight(
   awakeInterval: boolean,
   events: GameEvent[],
 ): void {
-  if (!awakeInterval || pet.sick || !isTooHeavy(pet, ctx)) return;
+  if (!awakeInterval || pet.stage === 'final') return;
+  burnOverTime(pet, ctx, tick);
+  if (pet.sick || !isTooHeavy(pet, ctx)) return;
   const { sickChancePerCheck } = ctx.tuning.weight;
   const p = pet.stage === 'adult' ? sickChancePerCheck.adult : sickChancePerCheck.preAdult;
   if (chance(pet.seed, tick, 'heavySick', p)) becomeSick(pet, atMs, 'weight', events);
+}
+
+/**
+ * Weight burns off steadily while awake, with a chance that grows with every kg above the healthy
+ * range: slowly just above it, faster when much heavier (round 16).
+ */
+function burnOverTime(pet: PetState, ctx: Context, tick: number): void {
+  if (pet.stage === 'final') return;
+  const { weight } = ctx.tuning;
+  const excess = pet.needs.weightKg - weight.healthyKg[pet.stage].high;
+  if (excess <= 0) return;
+  const p = Math.min(1, excess * weight.burnChancePerExcessKg);
+  if (chance(pet.seed, tick, 'weightBurn', p)) {
+    pet.needs.weightKg = Math.max(weight.minKg, pet.needs.weightKg - weight.burnKg);
+  }
 }

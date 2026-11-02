@@ -10,12 +10,12 @@ const settings = DEFAULT_SETTINGS;
 const tuning = DEFAULT_TUNING;
 
 describe('bedtime by stage (SLEEP-05, SLEEP-06)', () => {
-  it('puts young blobs to bed early and adults late', () => {
+  it("puts young blobs to bed early and adults late: the toy's three tiers, with the middle stages between", () => {
     expect(bedtimeMinutes('smallBlob', settings, tuning)).toBe(clock(19));
     expect(bedtimeMinutes('bigBlob', settings, tuning)).toBe(clock(19));
-    expect(bedtimeMinutes('tail', settings, tuning)).toBe(clock(20));
-    expect(bedtimeMinutes('legs', settings, tuning)).toBe(clock(20, 30));
-    expect(bedtimeMinutes('teen', settings, tuning)).toBe(clock(21, 30));
+    expect(bedtimeMinutes('tail', settings, tuning)).toBe(clock(19, 30));
+    expect(bedtimeMinutes('legs', settings, tuning)).toBe(clock(20));
+    expect(bedtimeMinutes('teen', settings, tuning)).toBe(clock(21));
     expect(bedtimeMinutes('adult', settings, tuning)).toBe(clock(22));
   });
 
@@ -25,20 +25,23 @@ describe('bedtime by stage (SLEEP-05, SLEEP-06)', () => {
     expect(times).toEqual([...times].sort((a, b) => a - b));
   });
 
-  it('shifts every stage with the configured adult bedtime (SLEEP-07)', () => {
-    const early = { ...settings, adultBedtimeMinutes: clock(21) };
-    expect(bedtimeMinutes('adult', early, tuning)).toBe(clock(21));
-    expect(bedtimeMinutes('smallBlob', early, tuning)).toBe(clock(18));
+  it('never lets a stage sleep later than the latest bedtime the player allows (SLEEP-07)', () => {
+    const early = { ...settings, latestBedtimeMinutes: clock(20, 30) };
+    expect(bedtimeMinutes('smallBlob', early, tuning)).toBe(clock(19)); // already earlier: unchanged
+    expect(bedtimeMinutes('tail', early, tuning)).toBe(clock(19, 30));
+    expect(bedtimeMinutes('legs', early, tuning)).toBe(clock(20));
+    expect(bedtimeMinutes('teen', early, tuning)).toBe(clock(20, 30)); // capped
+    expect(bedtimeMinutes('adult', early, tuning)).toBe(clock(20, 30)); // capped
   });
 
   it('reports the adult time for the locked final form, which never sleeps', () => {
-    expect(bedtimeMinutes('final', settings, tuning)).toBe(clock(22));
+    expect(bedtimeMinutes('final', settings, tuning)).toBe(clock(22)); // the latest bedtime
   });
 });
 
 describe('falling asleep and waking up', () => {
   function awakePet(): PetState {
-    return createPet({ id: 'p', name: 'Test', seed: 1, nowMs: at(0, 12) }, testContext());
+    return createPet({ id: 'p', seed: 1, nowMs: at(0, 12) }, testContext());
   }
 
   it('falls asleep exactly at bedtime and wakes exactly at the wake-up time', () => {

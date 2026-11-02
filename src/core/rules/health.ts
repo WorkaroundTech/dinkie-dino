@@ -137,11 +137,18 @@ export function bathe(pet: PetState, ctx: Context, atMs: number, events: GameEve
   if (wasDirty) events.push({ type: 'cleaned', atMs });
 }
 
-/** Whether Bath is open: when DIRTY, or in the hour before bedtime (DIRT-06, DIRT-07). */
+/**
+ * Whether Bath is open: when DIRTY, in the hour before bedtime, or in the first hour after waking
+ * up (DIRT-06, DIRT-07, round 16).
+ */
 export function bathOpen(pet: Readonly<PetState>, local: LocalTime, ctx: Context): boolean {
   if (pet.dirt.dirty) return true;
+  const window = ctx.tuning.health.bathWindowMinutes;
   const bed = bedtimeMinutes(pet.stage, ctx.settings, ctx.tuning);
-  return local.minutes >= bed - ctx.tuning.health.bathWindowMinutes && local.minutes < bed;
+  const wake = ctx.settings.wakeMinutes;
+  const beforeBed = local.minutes >= bed - window && local.minutes < bed;
+  const afterWake = local.minutes >= wake && local.minutes < wake + window;
+  return beforeBed || afterWake;
 }
 
 type ClockCause = keyof Tuning['health']['deathOnsetChecks'];
@@ -192,7 +199,7 @@ export function updateDangers(
   awakeInterval: boolean,
   events: GameEvent[],
 ): void {
-  const { escalation, deathOnsetChecks } = ctx.tuning.health;
+  const { deathEscalation, deathOnsetChecks } = ctx.tuning.health;
   const step = awakeInterval
     ? DECAY_SCALE
     : Math.round(DECAY_SCALE / ctx.tuning.needs.sleepAttenuation);
@@ -216,7 +223,7 @@ export function updateDangers(
     danger.progress += step;
     if (!awakeInterval || danger.progress < danger.onsetChecks * DECAY_SCALE) continue;
 
-    const p = escalatingChance(escalation.start, escalation.step, danger.rolls);
+    const p = escalatingChance(deathEscalation.start, deathEscalation.step, danger.rolls);
     danger.rolls += 1;
     if (chance(pet.seed, tick, `death:${cause}`, p)) {
       die(pet, cause, atMs, events);

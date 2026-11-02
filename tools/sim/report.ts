@@ -128,6 +128,52 @@ export function formatReport(results: readonly PlayerResult[], title: string): s
     ),
   );
 
+  sections.push('', 'Sicknesses per life (mean), by cause', '');
+  sections.push(
+    table(
+      ['player', 'dirt', 'light', 'wake', 'temperature', 'weight'],
+      results.map(({ player, summary: s }) => [
+        player,
+        ...(['dirt', 'light', 'wake', 'temperature', 'weight'] as const).map((c) =>
+          (s.sicknessPerLife[c] ?? 0).toFixed(2),
+        ),
+      ]),
+    ),
+  );
+
+  sections.push(
+    '',
+    'Proposed care score (docs/16): points per life p10 / median / p90, and mistakes per life',
+    '',
+  );
+  sections.push(
+    table(
+      ['player', 'points', 'sick', 'hot', 'cold', 'dirty', 'light', 'hungry', 'thirsty', 'sad'],
+      results.map(({ player, summary: s }) => [
+        player,
+        `${s.carePoints.p10.toFixed(0)} / ${s.carePoints.median.toFixed(0)} / ${s.carePoints.p90.toFixed(0)}`,
+        ...(
+          ['sick', 'tooHot', 'tooCold', 'dirty', 'lightOn', 'hungry', 'thirsty', 'sad'] as const
+        ).map((k) => (s.mistakesPerLife[k] ?? 0).toFixed(1)),
+      ]),
+    ),
+  );
+
+  sections.push(
+    '',
+    'Of the pets that reach the final form, the share that would be an Angel at each threshold (care points at most)',
+    '',
+  );
+  sections.push(
+    table(
+      ['player', '8', '16', '24', '32', '48'],
+      results.map(({ player, summary: s }) => [
+        player,
+        ...([8, 16, 24, 32, 48] as const).map((limit) => pct(s.angelShareAtMost[limit] ?? 0)),
+      ]),
+    ),
+  );
+
   sections.push('', 'Lifespan histogram (lives per whole day lived)', '');
   const maxDay = Math.max(
     0,

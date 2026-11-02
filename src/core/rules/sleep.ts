@@ -5,12 +5,13 @@ import type { LocalTime } from '../time';
 import { isNight } from '../time';
 
 /**
- * When a pet of this stage goes to bed, in minutes since midnight: the adult bedtime plus
- * the stage's offset (SLEEP-05/06/07). The final form never sleeps, so it reports the adult time.
+ * When a pet of this stage goes to bed, in minutes since midnight: the stage's own time, but never
+ * later than the player's latest-bedtime setting (SLEEP-05/06/07). The final form never sleeps, so
+ * it reports the latest bedtime.
  */
 export function bedtimeMinutes(stage: Stage, settings: Settings, tuning: Tuning): number {
-  if (stage === 'final') return settings.adultBedtimeMinutes;
-  return settings.adultBedtimeMinutes + tuning.sleep.bedtimeOffsetMinutes[stage];
+  if (stage === 'final') return settings.latestBedtimeMinutes;
+  return Math.min(tuning.sleep.bedtimeMinutes[stage], settings.latestBedtimeMinutes);
 }
 
 /**

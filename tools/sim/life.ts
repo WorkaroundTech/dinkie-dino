@@ -5,9 +5,12 @@ import type {
   DeathCause,
   FinalForm,
   PetState,
+  SickCause,
   Species,
 } from '../../src/core';
 import { act, advanceInPlace, conditionsOf, createPet, isHalted, TICK_MS } from '../../src/core';
+import { CareTracker } from './care';
+import type { MistakeKind } from './care';
 import type { Player } from './players';
 import { runSession, sessionMinutes } from './players';
 
@@ -32,6 +35,11 @@ export interface LifeReport {
   awakeChecks: number;
   conditionChecks: Record<Condition | 'any' | 'need', number>;
   actions: Record<string, number>;
+  /** How many times the pet fell sick, and of what. */
+  sickBy: Partial<Record<SickCause, number>>;
+  /** The proposed care score (docs/16): mistakes by kind, and the points they cost. */
+  careMistakes: Record<MistakeKind, number>;
+  carePoints: number;
 }
 
 export interface LifeOptions {
@@ -60,27 +68,38 @@ const NEEDS: readonly Condition[] = ['hungry', 'thirsty', 'sad'];
  */
 export function simulateLife(options: LifeOptions): LifeReport {
   const { seed, player, ctx, hatchMs, maxDays } = options;
-  let pet: PetState = createPet({ id: `sim-${seed}`, name: 'Sim', seed, nowMs: hatchMs }, ctx);
+  let pet: PetState = createPet({ id: `sim-${seed}`, seed, nowMs: hatchMs }, ctx);
 
   const conditionChecks = { any: 0, need: 0 } as LifeReport['conditionChecks'];
   for (const c of CONDITIONS) conditionChecks[c] = 0;
   const log = { actions: {} as Record<string, number> };
   let awakeChecks = 0;
   let sessions = 0;
+  const sickBy: LifeReport['sickBy'] = {};
+  const care = new CareTracker();
 
   const replace = (current: PetState, action: Action): PetState =>
     act(current, action, current.lastCheckIndex * TICK_MS, ctx).state;
   const endMs = hatchMs + maxDays * DAY_MS;
 
   for (let t = (pet.lastCheckIndex + 1) * TICK_MS; t <= endMs && !isHalted(pet); t += TICK_MS) {
-    advanceInPlace(pet, t, ctx);
+    for (const event of advanceInPlace(pet, t, ctx)) {
+      if (event.type === 'gotSick') sickBy[event.cause] = (sickBy[event.cause] ?? 0) + 1;
+    }
     if (isHalted(pet)) break;
 
-    if (!pet.asleep && sessionMinutes(player, pet, ctx).includes(ctx.localTime(t).minutes)) {
+    const present =
+      player.leavesAfterHours === undefined || t < hatchMs + player.leavesAfterHours * HOUR_MS;
+    if (
+      present &&
+      !pet.asleep &&
+      sessionMinutes(player, pet, ctx).includes(ctx.localTime(t).minutes)
+    ) {
       pet = runSession(pet, player, t, ctx, log, replace);
       sessions += 1;
     }
 
+    care.observe(pet, ctx);
     if (!pet.asleep) {
       awakeChecks += 1;
       const shown = conditionsOf(pet, ctx);
@@ -103,5 +122,8 @@ export function simulateLife(options: LifeOptions): LifeReport {
     awakeChecks,
     conditionChecks,
     actions: log.actions,
+    sickBy,
+    careMistakes: care.mistakes,
+    carePoints: care.points,
   };
 }

@@ -101,7 +101,7 @@ function finishGame(pet: PetState, ctx: Context, atMs: number, events: GameEvent
   if (result === 'petWon') {
     raise(pet.needs, 'happiness', 1);
     pet.play.lossStreak = 0;
-    pet.needs.weightKg = Math.max(cfg.minWeightKg, pet.needs.weightKg - cfg.weightLossPerWinKg);
+    burnWeightFromWin(pet, ctx);
   } else if (result === 'petLost') {
     pet.play.lossStreak += 1;
     if (
@@ -122,5 +122,19 @@ export function syncOverplay(pet: PetState): void {
   if (pet.needs.happiness < METER_MAX.happiness) {
     pet.play.overplayCount = 0;
     pet.play.overplayThreshold = null;
+  }
+}
+
+/**
+ * A won game burns weight half the time (round 16), but never takes the pet below its healthy range
+ * (assumption: playing should not make a pet underweight).
+ */
+function burnWeightFromWin(pet: PetState, ctx: Context): void {
+  const { weight } = ctx.tuning;
+  if (pet.stage === 'final') return;
+  const floor = Math.max(weight.minKg, weight.healthyKg[pet.stage].low);
+  if (pet.needs.weightKg <= floor) return;
+  if (chance(pet.seed, pet.actionCounter++, 'act:winBurn', weight.winBurnChance)) {
+    pet.needs.weightKg = Math.max(floor, pet.needs.weightKg - weight.burnKg);
   }
 }

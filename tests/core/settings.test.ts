@@ -21,15 +21,15 @@ describe('settings validation (TIME-05, decision A3)', () => {
   it('rejects times that are not multiples of 15 minutes', () => {
     expect(validateSettings({ ...DEFAULT_SETTINGS, wakeMinutes: clock(7, 10) })).toHaveLength(1);
     expect(
-      validateSettings({ ...DEFAULT_SETTINGS, adultBedtimeMinutes: clock(22, 5) }),
+      validateSettings({ ...DEFAULT_SETTINGS, latestBedtimeMinutes: clock(22, 5) }),
     ).toHaveLength(1);
   });
 
-  it('rejects an adult bedtime outside the proposed range', () => {
+  it('rejects a latest bedtime outside 19:00 to 23:45', () => {
     expect(
-      validateSettings({ ...DEFAULT_SETTINGS, adultBedtimeMinutes: clock(19, 45) }),
+      validateSettings({ ...DEFAULT_SETTINGS, latestBedtimeMinutes: clock(18, 45) }),
     ).toHaveLength(1);
-    expect(validateSettings({ ...DEFAULT_SETTINGS, adultBedtimeMinutes: clock(24) })).toHaveLength(
+    expect(validateSettings({ ...DEFAULT_SETTINGS, latestBedtimeMinutes: clock(24) })).toHaveLength(
       1,
     );
   });

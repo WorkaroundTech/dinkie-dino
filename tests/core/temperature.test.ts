@@ -24,7 +24,7 @@ const room = (patch?: (t: Tuning) => void) =>
 type Ctx = ReturnType<typeof room>;
 
 function hatch(ctx: Ctx, seed = 1, nowMs = at(0, 7)): PetState {
-  return createPet({ id: `p${seed}`, name: 'Test', seed, nowMs }, ctx);
+  return createPet({ id: `p${seed}`, seed, nowMs }, ctx);
 }
 
 /** A pet with the room set as given. */
@@ -345,7 +345,7 @@ describe('dying of the temperature (DEATH-07/08)', () => {
       happinessDrop: 1,
     };
     t.health.deathOnsetChecks.tooCold = { min: 24, max: 24 };
-    t.health.escalation = { start: 1, step: 0 };
+    t.health.deathEscalation = { start: 1, step: 0 };
   });
 
   it('kills a pet left too cold, 6 hours after it started to suffer', () => {

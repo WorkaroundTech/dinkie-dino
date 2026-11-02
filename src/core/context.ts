@@ -1,4 +1,5 @@
 import type { Tuning } from './config/tuning';
+import { tuningForPacing } from './config/profiles';
 import { DEFAULT_TUNING } from './config/tuning';
 import type { Settings } from './settings';
 import { DEFAULT_SETTINGS } from './settings';
@@ -19,4 +20,9 @@ export interface Context {
 
 export function defaultContext(localTime: LocalTimeFn): Context {
   return { settings: DEFAULT_SETTINGS, tuning: DEFAULT_TUNING, localTime };
+}
+
+/** A context whose tuning follows the pacing chosen in the settings. */
+export function contextFor(settings: Settings, localTime: LocalTimeFn): Context {
+  return { settings, tuning: tuningForPacing(settings.pacing), localTime };
 }

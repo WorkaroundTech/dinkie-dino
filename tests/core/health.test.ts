@@ -4,18 +4,18 @@ import { act, advance, canDo, createPet, DEFAULT_TUNING } from '../../src/core';
 import { at, calmContext, testContext } from './helpers';
 
 function hatch(ctx: ReturnType<typeof calmContext>, seed: number, nowMs: number): PetState {
-  return createPet({ id: `p${seed}`, name: 'Test', seed, nowMs }, ctx);
+  return createPet({ id: `p${seed}`, seed, nowMs }, ctx);
 }
 
 const kinds = (events: GameEvent[]) => events.map((e) => e.type);
 
 describe('dirtiness (DIRT-02, DIRT-08)', () => {
-  it('draws the dirt threshold per pet between 16 and 20 hours', () => {
+  it('draws the dirt threshold per pet between 20 and 24 hours', () => {
     const seen = new Set<number>();
     for (let seed = 1; seed <= 400; seed++) {
       const { threshold } = hatch(testContext(), seed, at(0, 12)).dirt;
-      expect(threshold).toBeGreaterThanOrEqual(64);
-      expect(threshold).toBeLessThanOrEqual(80);
+      expect(threshold).toBeGreaterThanOrEqual(80);
+      expect(threshold).toBeLessThanOrEqual(96);
       seen.add(threshold);
     }
     expect(seen.size).toBeGreaterThan(10);
@@ -60,16 +60,34 @@ describe('bath (DIRT-03, DIRT-06, DIRT-07)', () => {
     expect(canDo(pet, bath, at(0, 19), ctx)).toBe('bathClosed'); // asleep by then in practice
   });
 
-  it('follows the stage bedtime: 19:30-20:29 would suit a 20:30 bedtime, 21:00-21:59 an adult at 22:00', () => {
+  it('follows the stage bedtime: the hour before 20:00 for legs, before 22:00 for an adult', () => {
     const adult: PetState = { ...hatch(ctx, 1, at(0, 12)), stage: 'adult' };
     expect(canDo(adult, bath, at(0, 20, 45), ctx)).toBe('bathClosed');
     expect(canDo(adult, bath, at(0, 21), ctx)).toBeNull();
     expect(canDo(adult, bath, at(0, 21, 59), ctx)).toBeNull();
 
-    const legs: PetState = { ...hatch(ctx, 1, at(0, 12)), stage: 'legs' }; // bedtime 20:30
-    expect(canDo(legs, bath, at(0, 19, 15), ctx)).toBe('bathClosed');
-    expect(canDo(legs, bath, at(0, 19, 30), ctx)).toBeNull();
-    expect(canDo(legs, bath, at(0, 20, 29), ctx)).toBeNull();
+    const legs: PetState = { ...hatch(ctx, 1, at(0, 12)), stage: 'legs' }; // bedtime 20:00
+    expect(canDo(legs, bath, at(0, 18, 45), ctx)).toBe('bathClosed');
+    expect(canDo(legs, bath, at(0, 19), ctx)).toBeNull();
+    expect(canDo(legs, bath, at(0, 19, 59), ctx)).toBeNull();
+  });
+
+  it('is also open in the first hour after waking up (round 15)', () => {
+    const pet = hatch(ctx, 1, at(0, 12)); // wakes at 07:00
+    expect(canDo(pet, bath, at(1, 6, 45), ctx)).toBe('bathClosed'); // (asleep in practice)
+    expect(canDo(pet, bath, at(1, 7), ctx)).toBeNull();
+    expect(canDo(pet, bath, at(1, 7, 59), ctx)).toBeNull();
+    expect(canDo(pet, bath, at(1, 8), ctx)).toBe('bathClosed');
+  });
+
+  it('follows a different wake-up time', () => {
+    const late = calmContext(undefined, () => {});
+    late.settings = { ...late.settings, wakeMinutes: 8 * 60 + 30 };
+    const pet = hatch(late, 1, at(0, 12));
+    expect(canDo(pet, bath, at(1, 8, 15), late)).toBe('bathClosed');
+    expect(canDo(pet, bath, at(1, 8, 30), late)).toBeNull();
+    expect(canDo(pet, bath, at(1, 9, 15), late)).toBeNull();
+    expect(canDo(pet, bath, at(1, 9, 30), late)).toBe('bathClosed');
   });
 
   it('is open at any time of day when the pet is DIRTY', () => {
@@ -93,8 +111,8 @@ describe('bath (DIRT-03, DIRT-06, DIRT-07)', () => {
     expect(result.refused).toBeNull();
     expect(result.state.dirt.dirty).toBeNull();
     expect(result.state.dirt.checks).toBe(0);
-    expect(result.state.dirt.threshold).toBeGreaterThanOrEqual(64);
-    expect(result.state.dirt.threshold).toBeLessThanOrEqual(80);
+    expect(result.state.dirt.threshold).toBeGreaterThanOrEqual(80);
+    expect(result.state.dirt.threshold).toBeLessThanOrEqual(96);
     expect(kinds(result.events)).toEqual(['cleaned', 'acted']);
   });
 
@@ -268,7 +286,7 @@ describe('waking up sick after a night with the light on (SLEEP-02, SLEEP-03)', 
   function morningAfter(seed: number, lightOn: boolean): PetState {
     const pet = hatch(ctx, seed, at(0, 18));
     let state = advance(pet, at(0, 19), ctx).state;
-    if (lightOn) state = act(state, { kind: 'lamp' }, at(0, 19), ctx).state;
+    state = { ...state, lightOn }; // a new pet starts with the light on, so say which we want
     return advance(state, at(1, 7), ctx).state;
   }
 
@@ -290,12 +308,7 @@ describe('waking up sick after a night with the light on (SLEEP-02, SLEEP-03)', 
   it('reports the cause', () => {
     for (let seed = 1; seed <= 50; seed++) {
       const pet = hatch(ctx, seed, at(0, 18));
-      const asleep = act(
-        advance(pet, at(0, 19), ctx).state,
-        { kind: 'lamp' },
-        at(0, 19),
-        ctx,
-      ).state;
+      const asleep = { ...advance(pet, at(0, 19), ctx).state, lightOn: true };
       const { events } = advance(asleep, at(1, 7), ctx);
       const sick = events.find((e) => e.type === 'gotSick');
       if (sick) {
@@ -307,15 +320,14 @@ describe('waking up sick after a night with the light on (SLEEP-02, SLEEP-03)', 
   });
 
   it('gives a grace of one check: switching the light off right after bedtime is fine', () => {
-    let state = advance(hatch(ctx, 3, at(0, 18)), at(0, 19), ctx).state;
-    state = act(state, { kind: 'lamp' }, at(0, 19), ctx).state; // on at 19:00
+    let state = advance(hatch(ctx, 3, at(0, 18)), at(0, 19), ctx).state; // the light starts on
+    expect(state.lightOn).toBe(true);
     state = act(state, { kind: 'lamp' }, at(0, 19, 10), ctx).state; // off at 19:10
     expect(advance(state, at(0, 19, 15), ctx).state.nightLightChecks).toBe(0);
   });
 
   it('counts every check the light stays on during the night', () => {
-    let state = advance(hatch(ctx, 3, at(0, 18)), at(0, 19), ctx).state;
-    state = act(state, { kind: 'lamp' }, at(0, 19), ctx).state;
+    const state = advance(hatch(ctx, 3, at(0, 18)), at(0, 19), ctx).state; // the light starts on
     expect(advance(state, at(0, 20), ctx).state.nightLightChecks).toBe(4);
   });
 
@@ -340,7 +352,7 @@ describe('death clocks (DEATH-01, DEATH-07, DEATH-08, SLEEP-12)', () => {
   const doomed = (onset = 16) =>
     calmContext(undefined, (t) => {
       t.health.deathOnsetChecks.sick = { min: onset, max: onset };
-      t.health.escalation = { start: 1, step: 0 };
+      t.health.deathEscalation = { start: 1, step: 0 };
     });
 
   it('starts when the condition starts and ends when it ends', () => {
@@ -396,10 +408,10 @@ describe('death clocks (DEATH-01, DEATH-07, DEATH-08, SLEEP-12)', () => {
     expect(morning.dead).toEqual({ cause: 'sick', atMs: at(1, 7, 15) });
   });
 
-  it('escalates: 20% then 30%, and so on, until certain death', () => {
-    // Onset 4; with the default escalation the 9th roll is certain.
+  it('escalates: 10% on the first check, then 20%, 30% and so on, until certain death (round 15)', () => {
+    // Onset 4; with the default escalation the 10th roll is certain.
     const rollsToDie: number[] = [];
-    for (let seed = 1; seed <= 400; seed++) {
+    for (let seed = 1; seed <= 600; seed++) {
       const ctx = calmContext(undefined, (t) => {
         t.health.deathOnsetChecks.sick = { min: 4, max: 4 };
       });
@@ -411,16 +423,16 @@ describe('death clocks (DEATH-01, DEATH-07, DEATH-08, SLEEP-12)', () => {
       rollsToDie.push((dead.atMs - at(0, 8, 15)) / (15 * 60_000));
     }
     expect(Math.min(...rollsToDie)).toBe(0);
-    expect(Math.max(...rollsToDie)).toBeLessThanOrEqual(8);
+    expect(Math.max(...rollsToDie)).toBeLessThanOrEqual(9);
     const first = rollsToDie.filter((r) => r === 0).length / rollsToDie.length;
-    expect(Math.abs(first - 0.2)).toBeLessThan(0.06);
+    expect(Math.abs(first - 0.1)).toBeLessThan(0.04);
   });
 
   it('applies to hunger, thirst and the lowest happiness', () => {
     for (const cause of ['hunger', 'thirst', 'lowHappiness'] as const) {
       const ctx = calmContext(undefined, (t) => {
         t.health.deathOnsetChecks[cause] = { min: 4, max: 4 };
-        t.health.escalation = { start: 1, step: 0 };
+        t.health.deathEscalation = { start: 1, step: 0 };
       });
       const pet = hatch(ctx, 1, at(0, 7));
       pet.needs.hunger = cause === 'hunger' ? 0 : 8;

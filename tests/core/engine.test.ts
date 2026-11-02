@@ -8,18 +8,20 @@ import { at, atOffset, calmContext, testContext } from './helpers';
 const ctx = calmContext();
 
 function newPet(nowMs: number, seed = 1): PetState {
-  return createPet({ id: `pet-${seed}`, name: 'Test', seed, nowMs }, ctx);
+  return createPet({ id: `pet-${seed}`, seed, nowMs }, ctx);
 }
 
 describe('hatching (LIFE-01, LIFE-02)', () => {
-  it('starts as a small blob with half-full meters and Normal mood', () => {
+  it('starts as a small blob with empty hunger, thirst and education, Normal mood, the light on', () => {
     const pet = newPet(at(0, 12));
     expect(pet.stage).toBe('smallBlob');
     expect(pet.wakeUps).toBe(0);
     expect(pet.finalForm).toBeNull();
     expect(pet.species).toBeNull();
     expect(pet.dead).toBeNull();
-    expect(pet.needs).toMatchObject({ hunger: 4, thirst: 4, happiness: 2, education: 0 });
+    expect(pet.needs).toMatchObject({ hunger: 0, thirst: 0, happiness: 2, education: 0 });
+    expect(pet.lightOn).toBe(true);
+    expect(pet.room.acOn).toBe(false);
   });
 
   it('starts awake during the day and asleep during the night', () => {
@@ -89,7 +91,7 @@ describe('sleep and wake-up in the engine (SLEEP-01, LIFE-02)', () => {
     const late = testContext({
       settings: { ...ctx.settings, wakeMinutes: 8 * 60 + 30 },
     });
-    const pet = createPet({ id: 'p', name: 'T', seed: 1, nowMs: at(0, 15) }, late);
+    const pet = createPet({ id: 'p', seed: 1, nowMs: at(0, 15) }, late);
     expect(advance(pet, at(1, 8, 15), late).state.wakeUps).toBe(0);
     expect(advance(pet, at(1, 8, 30), late).state.wakeUps).toBe(1);
   });
@@ -200,7 +202,7 @@ describe('final form (LIFE-04, LIFE-05, LIFE-07)', () => {
 describe('determinism with the real rules (TIME-02)', () => {
   const real = testContext();
   const newRealPet = (nowMs: number, seed = 1): PetState =>
-    createPet({ id: `pet-${seed}`, name: 'Test', seed, nowMs }, real);
+    createPet({ id: `pet-${seed}`, seed, nowMs }, real);
 
   /** Splits [from, to] into pieces of 1 check up to 3 days, deterministically. */
   function pieces(from: number, to: number, salt: number): number[] {
@@ -247,7 +249,7 @@ describe('determinism with the real rules (TIME-02)', () => {
     const lifecycle = (offset: number) => {
       const zone = calmContext(fixedOffsetLocalTime(offset));
       const hatch = atOffset(offset, 0, 12);
-      const pet = createPet({ id: 'p', name: 'T', seed: 2, nowMs: hatch }, zone);
+      const pet = createPet({ id: 'p', seed: 2, nowMs: hatch }, zone);
       const { state, events } = advance(pet, atOffset(offset, 12, 7), zone);
       return {
         stage: state.stage,
@@ -297,7 +299,7 @@ describe('the clock (TIME-04)', () => {
       const offset = (utcMs: number) => -180 + (utcMs >= shiftAt ? shiftMinutes : 0);
       const dst = calmContext((utcMs) => fixedOffsetLocalTime(offset(utcMs))(utcMs));
 
-      let pet = createPet({ id: 'p', name: 'T', seed: 3, nowMs: at(0, 12) }, dst);
+      let pet = createPet({ id: 'p', seed: 3, nowMs: at(0, 12) }, dst);
       const wakeEvents: GameEvent[] = [];
       for (let n = 1; n <= 9; n++) {
         // Local 07:00 of day n, converted to UTC with the offset in force at that time.
@@ -355,7 +357,7 @@ describe('needs over a night (SLEEP-11)', () => {
         },
       },
     });
-    const pet = createPet({ id: 'p', name: 'T', seed: 1, nowMs: at(0, 6, 45) }, eager);
+    const pet = createPet({ id: 'p', seed: 1, nowMs: at(0, 6, 45) }, eager);
     expect(pet.asleep).toBe(true);
     pet.needs.thirst = 8;
 

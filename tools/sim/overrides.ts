@@ -1,13 +1,17 @@
 import type { Tuning } from '../../src/core';
-import { DEFAULT_TUNING } from '../../src/core';
+import type { Pacing } from '../../src/core';
+import { tuningForPacing } from '../../src/core';
 
 /**
  * A copy of the default tuning with overrides applied. Each override is `path=number`, for
  * example `temperature.moveChance=0.06` or `needs.checksPerPoint.hunger=8`. An unknown path or a
  * value that is not a number is an error, so a typo cannot silently run the wrong experiment.
  */
-export function tuningWithOverrides(overrides: readonly string[]): Tuning {
-  const tuning = structuredClone(DEFAULT_TUNING);
+export function tuningWithOverrides(
+  overrides: readonly string[],
+  pacing: Pacing = 'normal',
+): Tuning {
+  const tuning = tuningForPacing(pacing);
   for (const override of overrides) applyOverride(tuning, override);
   return tuning;
 }

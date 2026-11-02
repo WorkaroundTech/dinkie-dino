@@ -4,13 +4,15 @@ export { conditionsOf, displayCondition, needsAttention } from './rules/conditio
 export type { Condition } from './rules/conditions';
 export { advance, advanceInPlace } from './engine';
 export type { AdvanceResult } from './engine';
-export { defaultContext } from './context';
+export { contextFor, defaultContext } from './context';
 export type { Context } from './context';
 export type { GameEvent, RoundOutcome, SickCause } from './events';
 export { DEFAULT_SETTINGS, validateSettings } from './settings';
 export type { Settings } from './settings';
 export { DEFAULT_TUNING } from './config/tuning';
 export type { Range, Tuning } from './config/tuning';
+export { PACINGS, tuningForPacing } from './config/profiles';
+export type { Pacing } from './config/profiles';
 export { createPet, isHalted, METER_MAX, SCHEMA_VERSION } from './state';
 export type {
   PetState,

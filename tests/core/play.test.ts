@@ -9,7 +9,7 @@ import { at, calmContext } from './helpers';
 const NOW = at(0, 12);
 
 function hatch(ctx: Context, seed = 1, nowMs = NOW): PetState {
-  return createPet({ id: `p${seed}`, name: 'Test', seed, nowMs }, ctx);
+  return createPet({ id: `p${seed}`, seed, nowMs }, ctx);
 }
 
 /** The pet's next hand, worked out the way the engine draws it (white-box, for forcing results). */
@@ -177,13 +177,24 @@ describe('what a game does (PLAY-04…06, HAP-02)', () => {
     expect(playGame(withHappiness(4), WON, ctx).state.needs.happiness).toBe(4);
   });
 
-  it('a win also makes the pet a little lighter, but never below the minimum weight', () => {
-    const pet = withHappiness(2);
-    pet.needs.weightKg = 6;
-    const won = playGame(pet, WON, ctx).state;
-    expect(won.needs.weightKg).toBe(5);
-    pet.needs.weightKg = 1;
-    expect(playGame(pet, WON, ctx).state.needs.weightKg).toBe(1);
+  it('a win burns weight half the time, but never below the healthy range (round 15)', () => {
+    const gain = ctx.tuning.weight.gainKg;
+    let lighter = 0;
+    const n = 2000;
+    for (let seed = 1; seed <= n; seed++) {
+      const pet = withHappiness(2, seed);
+      pet.needs.weightKg = 7; // above the healthy range of a small blob (4 to 6)
+      const after = playGame(pet, WON, ctx).state;
+      if (after.needs.weightKg < 7) {
+        lighter++;
+        expect(after.needs.weightKg).toBeCloseTo(7 - gain);
+      }
+    }
+    expect(Math.abs(lighter / n - 0.5)).toBeLessThan(0.04);
+
+    const atFloor = withHappiness(2);
+    atFloor.needs.weightKg = 4; // the bottom of the healthy range
+    expect(playGame(atFloor, WON, ctx).state.needs.weightKg).toBe(4);
   });
 
   it('a loss leaves happiness alone, the first time (PLAY-05)', () => {

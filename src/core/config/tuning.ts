@@ -1,5 +1,5 @@
 import type { FoodType } from '../actions';
-import type { CareStage } from '../state';
+import type { CareStage, Species } from '../state';
 
 /**
  * Every tunable number of the simulation, with the rule it implements. Values marked
@@ -12,7 +12,7 @@ export interface Range {
 }
 
 export interface Tuning {
-  /** Meter values right after hatching (Q-START-1 default: half full, Normal mood). */
+  /** Meter values right after hatching (round 16): empty hunger, thirst and education, Normal mood. */
   initial: {
     hunger: number;
     thirst: number;
@@ -29,8 +29,12 @@ export interface Tuning {
   };
 
   sleep: {
-    /** Minutes added to the adult bedtime for each stage; younger pets sleep earlier (SLEEP-05/06). */
-    bedtimeOffsetMinutes: Record<CareStage, number>;
+    /**
+     * When each stage goes to bed, in minutes since midnight (SLEEP-05/06). The player's "latest
+     * bedtime" setting caps every one of them, so a player who cannot stay up can have the pet go
+     * to bed earlier.
+     */
+    bedtimeMinutes: Record<CareStage, number>;
   };
 
   /** What eating and drinking do (NEED-02, ICE-01…04, FOOD refusal default). */
@@ -40,8 +44,14 @@ export interface Tuning {
     thirstGain: number;
     /** A full pet refuses food and drink (Q-FOOD-3 default). */
     refuseWhenFull: boolean;
-    /** Ice Cream: 70% chance of weight gain (ICE-03) and +1 happiness level (ICE-04). */
-    iceCream: { weightChance: number; weightGainKg: number; happinessGain: number };
+    /** Ice Cream raises happiness one level (ICE-04); its weight effect is in `weight`. */
+    iceCream: { happinessGain: number };
+    /**
+     * What each species accepts once it is known (round 16: a pet refuses food that does not suit
+     * its species, even when hungry). Before the species is decided anything is accepted.
+     * Ice Cream is a treat for everyone. Triceratops, "pasta / everything", is assumed to accept all.
+     */
+    speciesFoods: Record<Species, readonly FoodType[]>;
   };
 
   /** Pet and Educate: amounts and caps in levels (HAP-01, HAP-04, EDU-02, EDU-03). */
@@ -58,8 +68,10 @@ export interface Tuning {
   health: {
     /** Chance of waking up SICK, by whether the light was left on while asleep (SLEEP-03). */
     wakeSickChance: { lightOff: number; lightOn: number };
-    /** The escalating-chance template (COND-06): the first check, then plus `step` per check. */
+    /** The dirty checks: sickness chance on the first check, then plus `step` per check (DIRT-09, COND-06). */
     escalation: { start: number; step: number };
+    /** The death checks after a condition's onset: 10% on the first check, then plus 10% each (DEATH-08). */
+    deathEscalation: { start: number; step: number };
     dirt: {
       /** Checks after a bath until the pet is dirty: 16 to 20 hours (DIRT-02). */
       thresholdChecks: Range;
@@ -77,7 +89,7 @@ export interface Tuning {
       'sick' | 'hunger' | 'thirst' | 'lowHappiness' | 'tooHot' | 'tooCold' | 'tooHeavy',
       Range
     >;
-    /** Bath is allowed this many minutes before bedtime (DIRT-06). */
+    /** Bath is also allowed this many minutes before bedtime and after waking up (DIRT-06, round 16). */
     bathWindowMinutes: number;
   };
 
@@ -88,19 +100,35 @@ export interface Tuning {
     /** Over-play: games past this many (drawn in this range), played at top happiness, may cost education (EDU-04/05). */
     overplayThreshold: Range;
     overplayEducationDropChance: number;
-    /** Weight lost by winning a game, and the lowest weight (Q-WEIGHT-1 default, provisional). */
-    weightLossPerWinKg: number;
-    minWeightKg: number;
   };
 
+  /** All provisional, to be replaced with real numbers from the toy (Q-WEIGHT-1, round 16). */
   weight: {
-    /** Heavier than this is too heavy, by stage (WEIGHT-01, provisional until Q-WEIGHT-1). */
+    /** The healthy range for each stage, in kg. */
+    healthyKg: Record<CareStage, { low: number; high: number }>;
+    /** Heavier than this is too heavy, by stage (WEIGHT-01). */
     heavyAboveKg: Record<CareStage, number>;
     /** Chance per awake check that a too heavy pet falls sick: higher before adulthood. */
     sickChancePerCheck: { preAdult: number; adult: number };
+    /**
+     * Foods that add weight: caloric ones with a chance, the hyper-caloric Ice Cream always;
+     * non-caloric ones only when the pet is below its healthy range (round 16).
+     */
+    foodKind: Record<FoodType, 'caloric' | 'hyperCaloric' | 'nonCaloric'>;
+    caloricGainChance: number;
+    gainKg: number;
+    /** Weight is burned by winning a game (with a chance) and, steadily, by being above the healthy range. */
+    winBurnChance: number;
+    burnKg: number;
+    /** Chance per awake check of burning one kg, for each kg above the healthy range. */
+    burnChancePerExcessKg: number;
+    minKg: number;
   };
 
-  /** Meter values at which the pet shows a condition (COND-03, Q-COND-1 defaults). */
+  /**
+   * Meter values at which the pet is in a condition (COND-03). Round 15: hungry, thirsty and sad
+   * only when the meter is completely empty; what they cause starts at the next check.
+   */
   conditions: { hungryAtOrBelow: number; thirstyAtOrBelow: number; sadAtOrBelow: number };
 
   temperature: {
@@ -149,24 +177,24 @@ export interface Tuning {
 }
 
 export const DEFAULT_TUNING: Tuning = {
-  initial: { hunger: 4, thirst: 4, happiness: 2, education: 0, weightKg: 5 }, // Q-START-1, Q-WEIGHT-1
+  initial: { hunger: 0, thirst: 0, happiness: 2, education: 0, weightKg: 5 }, // round 16; weight Q-WEIGHT-1
 
   needs: {
     // Tuned with the simulator so that two visits a day are enough (PACE-01): see tools/sim.
-    checksPerPoint: { hunger: 8, thirst: 8, happiness: 18 },
+    checksPerPoint: { hunger: 6, thirst: 6, happiness: 16 }, // a full meter empties in about 12 awake hours (PACE-01, doc 15)
     sleepAttenuation: 6, // SLEEP-11: 4 to 8, default 6
   },
 
   sleep: {
-    // SLEEP-06 against the default adult bedtime of 22:00: blobs 19:00, tail 20:00, legs 20:30,
-    // teen 21:30, adult 22:00. Only the blobs and the adult come from the real toy.
-    bedtimeOffsetMinutes: {
-      smallBlob: -180,
-      bigBlob: -180,
-      tail: -120,
-      legs: -90,
-      teen: -30,
-      adult: 0,
+    // The toy has three tiers: blobs 19:00, legs 20:00, adult 22:00. Tail and teenager sit between
+    // them (an experiment, round 16). The player's latest-bedtime setting caps all of them.
+    bedtimeMinutes: {
+      smallBlob: 19 * 60,
+      bigBlob: 19 * 60,
+      tail: 19 * 60 + 30,
+      legs: 20 * 60,
+      teen: 21 * 60,
+      adult: 22 * 60,
     },
   },
 
@@ -175,7 +203,12 @@ export const DEFAULT_TUNING: Tuning = {
     hungerGain: { hamburger: 1, apple: 1, carrot: 2, chicken: 2, noodles: 2, iceCream: 0 },
     thirstGain: 1,
     refuseWhenFull: true,
-    iceCream: { weightChance: 0.7, weightGainKg: 1, happinessGain: 1 }, // weight scale: Q-WEIGHT-1
+    iceCream: { happinessGain: 1 },
+    speciesFoods: {
+      trex: ['hamburger', 'chicken', 'iceCream'],
+      bronto: ['apple', 'carrot', 'iceCream'],
+      triceratops: ['hamburger', 'chicken', 'apple', 'carrot', 'iceCream', 'noodles'],
+    },
   },
 
   care: {
@@ -191,17 +224,37 @@ export const DEFAULT_TUNING: Tuning = {
     lossHappinessDropChance: 0.5, // PLAY-06
     overplayThreshold: { min: 3, max: 5 }, // EDU-04
     overplayEducationDropChance: 0.5, // EDU-05
-    weightLossPerWinKg: 1,
-    minWeightKg: 1,
   },
 
   weight: {
-    // Provisional: the start weight is 5 kg and Ice Cream adds 1 kg (Q-WEIGHT-1).
+    // Placeholders until the real toy is checked: the pet starts at 5 kg and every stage has a healthy range.
+    healthyKg: {
+      smallBlob: { low: 4, high: 6 },
+      bigBlob: { low: 7, high: 10 },
+      tail: { low: 10, high: 13 },
+      legs: { low: 14, high: 17 },
+      teen: { low: 19, high: 24 },
+      adult: { low: 26, high: 32 },
+    },
     heavyAboveKg: { smallBlob: 8, bigBlob: 12, tail: 16, legs: 20, teen: 28, adult: 36 },
     sickChancePerCheck: { preAdult: 0.03, adult: 0.01 },
+    foodKind: {
+      apple: 'caloric',
+      hamburger: 'caloric',
+      noodles: 'caloric',
+      iceCream: 'hyperCaloric',
+      carrot: 'nonCaloric',
+      chicken: 'nonCaloric',
+    },
+    caloricGainChance: 0.75, // "something like ~75%"
+    gainKg: 0.25, // a quarter of a kg per gaining meal: a thorough visit gives several meals
+    winBurnChance: 0.5, // a won game burns weight half the time
+    burnKg: 0.25,
+    burnChancePerExcessKg: 0.04, // steady and low maintenance: more when more overweight
+    minKg: 1,
   },
 
-  conditions: { hungryAtOrBelow: 2, thirstyAtOrBelow: 2, sadAtOrBelow: 0 },
+  conditions: { hungryAtOrBelow: 0, thirstyAtOrBelow: 0, sadAtOrBelow: 0 },
 
   temperature: {
     start: 25,
@@ -210,15 +263,16 @@ export const DEFAULT_TUNING: Tuning = {
     band: { low: 24, high: 26 }, // TEMP-01
     coldAtOrBelow: 23, // TEMP-07
     hotAtOrAbove: 27, // TEMP-08
-    moveChance: 0.25, // about one degree an hour awake: out of the band in 1 to 2 hours (TEMP-09)
+    moveChance: 0.06, // about one degree per 4 hours awake: the AC wants a look every ~4 hours (TEMP-09, tuned in doc 15)
     bump: { min: 2, max: 3 }, // 19 -> 21 or 22 (TEMP-13)
     comfortOnSleep: 25,
-    // deathChance is 0.2%: the 1% placeholder killed a quarter of the pets of players who cannot track
-    // the AC, because they enter these states so often (tuned with the simulator, doc 15).
+    // Entering suffering: a gentle start (3% a check at the threshold, +3% per further degree), 10% sickness
+    // on entry and a 0.2% chance of instant death. Tuned with the simulator so that an unattended pet
+    // usually survives its first day while a visitor every 4 hours is safe (doc 15).
     entry: {
-      baseChance: 0.1,
-      perDegree: 0.05,
-      sickChance: 0.25,
+      baseChance: 0.03,
+      perDegree: 0.03,
+      sickChance: 0.1,
       deathChance: 0.002,
       happinessDrop: 1,
     },
@@ -227,9 +281,10 @@ export const DEFAULT_TUNING: Tuning = {
 
   health: {
     wakeSickChance: { lightOff: 0.02, lightOn: 0.6 }, // SLEEP-03 (accepted defaults)
-    escalation: { start: 0.2, step: 0.1 }, // DIRT-09, COND-06
+    escalation: { start: 0.2, step: 0.1 }, // DIRT-09: the dirty checks
+    deathEscalation: { start: 0.1, step: 0.1 }, // DEATH-08, round 16: the death checks start at 10%
     dirt: {
-      thresholdChecks: { min: 64, max: 80 }, // 16 to 20 h, DIRT-02
+      thresholdChecks: { min: 80, max: 96 }, // 20 to 24 h (DIRT-02, decided in round 15)
       onsetChecks: { min: 8, max: 12 }, // 2 to 3 h, DIRT-09
       happinessDropPerCheck: 1, // DIRT-10 (per check is a reading, to confirm)
     },

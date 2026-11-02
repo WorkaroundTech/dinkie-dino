@@ -7,7 +7,7 @@ import { at, calmContext } from './helpers';
 const ctx = calmContext();
 
 function pet(seed: number, nowMs = at(0, 12)): PetState {
-  return createPet({ id: 'p', name: 'Test', seed, nowMs }, ctx);
+  return createPet({ id: 'p', seed, nowMs }, ctx);
 }
 
 function withDiet(seed: number, diet: PetState['diet']): PetState {

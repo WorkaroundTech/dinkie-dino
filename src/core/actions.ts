@@ -35,6 +35,7 @@ export type Refusal =
   | 'asleep' // only Lamp, Check and Clock work at night (SLEEP-09)
   | 'sick' // a sick pet refuses everything except Medicine, Lamp, Check, Clock and AC (SICK-01/02)
   | 'full' // a full pet refuses food and drink (Q-FOOD-3 default)
+  | 'notForSpecies' // a pet refuses food that does not suit its species, even when hungry (round 16)
   | 'bathClosed' // Bath is only open when DIRTY or in the hour before bedtime (DIRT-06)
   | 'notSick'; // Medicine only works on a sick pet (MED-04)
 
@@ -75,6 +76,9 @@ export function canDo(
   if (isHalted(pet)) return 'locked';
   if (pet.asleep && !WORKS_ASLEEP.has(action.kind)) return 'asleep';
   if (pet.sick && REFUSED_WHEN_SICK.has(action.kind)) return 'sick';
+  if (action.kind === 'food' && pet.species !== null) {
+    if (!ctx.tuning.food.speciesFoods[pet.species].includes(action.food)) return 'notForSpecies';
+  }
   if (action.kind === 'medical' && !pet.sick) return 'notSick';
   if (action.kind === 'bath' && !bathOpen(pet, ctx.localTime(nowMs), ctx)) return 'bathClosed';
 
@@ -178,10 +182,31 @@ function eat(pet: PetState, food: FoodType, ctx: Context): void {
   if (group && (pet.stage === 'smallBlob' || pet.stage === 'bigBlob')) pet.diet[group] += 1;
 
   if (food === 'iceCream') {
-    const { iceCream } = tuning.food;
-    raise(pet.needs, 'happiness', iceCream.happinessGain, tuning.care.happinessCapWithoutPlay);
-    if (chance(pet.seed, pet.actionCounter++, 'act:iceCreamWeight', iceCream.weightChance)) {
-      pet.needs.weightKg += iceCream.weightGainKg;
-    }
+    raise(
+      pet.needs,
+      'happiness',
+      tuning.food.iceCream.happinessGain,
+      tuning.care.happinessCapWithoutPlay,
+    );
   }
+  gainWeight(pet, food, ctx);
+}
+
+/**
+ * Weight from food (round 16). Caloric foods (Apple, Hamburger, Noodles) add weight 75% of the time;
+ * the hyper-caloric Ice Cream always does; non-caloric foods (Carrot, Chicken Thigh) never do, except
+ * to a pet below its healthy range, which they help back up.
+ */
+function gainWeight(pet: PetState, food: FoodType, ctx: Context): void {
+  const { weight } = ctx.tuning;
+  if (pet.stage === 'final') return;
+  const kind = weight.foodKind[food];
+
+  let gains: boolean;
+  if (kind === 'hyperCaloric') gains = true;
+  else if (kind === 'caloric')
+    gains = chance(pet.seed, pet.actionCounter++, 'act:calories', weight.caloricGainChance);
+  else gains = pet.needs.weightKg < weight.healthyKg[pet.stage].low;
+
+  if (gains) pet.needs.weightKg += weight.gainKg;
 }

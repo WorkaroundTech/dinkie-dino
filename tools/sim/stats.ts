@@ -19,6 +19,13 @@ export interface Summary {
   species: Partial<Record<Species, number>>;
   /** The lifespan, in whole days, as a histogram of lives. */
   lifespanDays: Record<number, number>;
+  /** Mean number of sicknesses per life, by cause. */
+  sicknessPerLife: Record<string, number>;
+  /** The proposed care score (docs/16): care points per life, and care mistakes per life by kind. */
+  carePoints: { p10: number; median: number; p90: number };
+  mistakesPerLife: Record<string, number>;
+  /** Of the pets that reached the final form: the share with at most this many care points. */
+  angelShareAtMost: Record<number, number>;
 }
 
 /** The p-th percentile (0 to 1) by linear interpolation; 0 for an empty list. */
@@ -45,6 +52,7 @@ export function summarize(reports: readonly LifeReport[]): Summary {
   const finalAtWakeUp: Summary['finalAtWakeUp'] = {};
   const lifespanDays: Summary['lifespanDays'] = {};
   const actionTotals: Record<string, number> = {};
+  const sickTotals: Record<string, number> = {};
   let totalDays = 0;
   let totalSessions = 0;
 
@@ -58,6 +66,8 @@ export function summarize(reports: readonly LifeReport[]): Summary {
     totalSessions += r.sessions;
     for (const [kind, n] of Object.entries(r.actions))
       actionTotals[kind] = (actionTotals[kind] ?? 0) + n;
+    for (const [cause, n] of Object.entries(r.sickBy))
+      sickTotals[cause] = (sickTotals[cause] ?? 0) + n;
   }
 
   const hours = reports.map((r) => r.hoursLived);
@@ -92,5 +102,39 @@ export function summarize(reports: readonly LifeReport[]): Summary {
     actionsPerDay,
     species,
     lifespanDays,
+    carePoints: {
+      p10: percentile(
+        reports.map((r) => r.carePoints),
+        0.1,
+      ),
+      median: percentile(
+        reports.map((r) => r.carePoints),
+        0.5,
+      ),
+      p90: percentile(
+        reports.map((r) => r.carePoints),
+        0.9,
+      ),
+    },
+    angelShareAtMost: Object.fromEntries(
+      [8, 16, 24, 32, 48].map((limit) => {
+        const finals = reports.filter((r) => r.outcome === 'final');
+        return [
+          limit,
+          finals.length === 0
+            ? 0
+            : finals.filter((r) => r.carePoints <= limit).length / finals.length,
+        ];
+      }),
+    ),
+    mistakesPerLife: Object.fromEntries(
+      ['sick', 'tooCold', 'tooHot', 'dirty', 'lightOn', 'hungry', 'thirsty', 'sad'].map((kind) => [
+        kind,
+        mean(reports.map((r) => r.careMistakes[kind as keyof LifeReport['careMistakes']] ?? 0)),
+      ]),
+    ),
+    sicknessPerLife: Object.fromEntries(
+      Object.entries(sickTotals).map(([cause, n]) => [cause, lives === 0 ? 0 : n / lives]),
+    ),
   };
 }
