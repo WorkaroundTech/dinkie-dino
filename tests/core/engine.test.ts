@@ -245,7 +245,7 @@ describe('determinism with the real rules (TIME-02)', () => {
 
   it('behaves the same for the same local times in any time zone', () => {
     const lifecycle = (offset: number) => {
-      const zone = testContext({}, fixedOffsetLocalTime(offset));
+      const zone = calmContext(fixedOffsetLocalTime(offset));
       const hatch = atOffset(offset, 0, 12);
       const pet = createPet({ id: 'p', name: 'T', seed: 2, nowMs: hatch }, zone);
       const { state, events } = advance(pet, atOffset(offset, 12, 7), zone);

@@ -4,6 +4,7 @@ import { updateDangers, updateDirt, rollWakeSickness } from './rules/health';
 import { applyMorningGrowth } from './rules/growth';
 import { decayNeeds } from './rules/needs';
 import { updateSleep } from './rules/sleep';
+import { settleRoomForSleep, updateRoom } from './rules/temperature';
 import type { PetState } from './state';
 import { isHalted } from './state';
 import { tickIndexAt, tickStartMs } from './time';
@@ -37,7 +38,8 @@ export function advance(pet: Readonly<PetState>, toMs: number, ctx: Context): Ad
  * One check, at the instant `tick` starts. The order matters:
  *
  * 1. The interval that just ended is accounted for, at the rates of the state the pet was in
- *    (need decay, light left on at night).
+ *    (need decay, light left on at night, the room drifting). The room goes first so that its last
+ *    awake move happens before the night's temperature reset.
  * 2. The schedule is applied at this instant (bedtime, wake-up, the morning routine).
  * 3. Conditions are updated: dirt, then the death clocks. Rolls only happen for an interval that
  *    was spent awake, so nothing is rolled at the check that ends a night (SLEEP-12).
@@ -48,9 +50,12 @@ function processCheck(pet: PetState, tick: number, ctx: Context, events: GameEve
 
   decayNeeds(pet, ctx.tuning);
   if (pet.asleep && pet.lightOn) pet.nightLightChecks += 1;
+  updateRoom(pet, ctx, tick, atMs, awakeInterval, events);
+  if (pet.dead) return;
 
   const change = updateSleep(pet, ctx.localTime(atMs), ctx.settings, ctx.tuning);
   if (change === 'fellAsleep') {
+    settleRoomForSleep(pet, ctx);
     events.push({ type: 'fellAsleep', atMs });
   } else if (change === 'woke') {
     pet.wakeUps += 1;

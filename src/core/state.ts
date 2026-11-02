@@ -75,6 +75,7 @@ export interface PetState {
   lightOn: boolean;
   /** Sleeping checks with the light on, since the last wake-up (SLEEP-02/03). */
   nightLightChecks: number;
+  room: Room;
   sick: { sinceMs: number } | null;
   dirt: Dirt;
   /** Running death clocks, by cause (DEATH-07/08). */
@@ -95,6 +96,18 @@ export interface Diet {
   meat: number;
   plant: number;
   noodles: number;
+}
+
+/** The room the pet lives in (TEMP-01…18). */
+export interface Room {
+  tempC: number;
+  acOn: boolean;
+  /** The one-off bump toward comfort is available again once the room is back in the band (TEMP-14). */
+  bumpArmed: boolean;
+  /** TOO_COLD / TOO_HOT while the pet suffers from the temperature (TEMP-07/08). */
+  zone: 'ok' | 'tooCold' | 'tooHot';
+  /** Awake checks spent in the current zone. */
+  zoneChecks: number;
 }
 
 /** Dirtiness (DIRT-01…10): there is no poop; the pet simply gets dirty over time. */
@@ -120,9 +133,13 @@ export interface Dirt {
 /**
  * A condition that can eventually kill: it must last `onsetChecks` before death checks start,
  * then each awake check rolls with a rising chance (DEATH-07/08).
+ *
+ * `progress` is in the same integer units as need decay (rules/needs.ts DECAY_SCALE per awake
+ * check): sleeping time counts, but slowed down like everything else at night, so that a night
+ * does not push a pet into the lethal phase before the player can wake up and help (SLEEP-11/12).
  */
 export interface Danger {
-  checks: number;
+  progress: number;
   onsetChecks: number;
   rolls: number;
 }
@@ -165,6 +182,13 @@ export function createPet(params: NewPetParams, ctx: Context): PetState {
     asleep,
     lightOn: false, // Q-START-1 default
     nightLightChecks: 0,
+    room: {
+      tempC: tuning.temperature.start,
+      acOn: false,
+      bumpArmed: true,
+      zone: 'ok',
+      zoneChecks: 0,
+    },
     sick: null,
     dirt: {
       checks: 0,

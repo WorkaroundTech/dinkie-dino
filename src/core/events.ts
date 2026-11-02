@@ -2,7 +2,7 @@ import type { Action, Refusal } from './actions';
 import type { DeathCause, FinalForm, Species, Stage } from './state';
 
 /** What made a pet sick. */
-export type SickCause = 'dirt' | 'light' | 'wake';
+export type SickCause = 'dirt' | 'light' | 'wake' | 'temperature';
 
 /** Things that happened while the engine advanced; the UI turns them into sounds and summaries. */
 export type GameEvent =
@@ -15,6 +15,7 @@ export type GameEvent =
   | { type: 'cleaned'; atMs: number }
   | { type: 'gotSick'; atMs: number; cause: SickCause }
   | { type: 'cured'; atMs: number }
+  | { type: 'roomZone'; atMs: number; zone: 'ok' | 'tooCold' | 'tooHot' }
   | { type: 'died'; atMs: number; cause: DeathCause }
   | { type: 'acted'; atMs: number; action: Action }
   | { type: 'refused'; atMs: number; action: Action; reason: Refusal };

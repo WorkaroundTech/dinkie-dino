@@ -16,6 +16,9 @@ function diligent(pet: PetState): Action[] {
   if (pet.needs.happiness <= 2) actions.push({ kind: 'pet' });
   actions.push({ kind: 'bath' }); // only opens when DIRTY or before bedtime; refused otherwise
   if (pet.lightOn) actions.push({ kind: 'lamp' }); // the light stays off, also during the night
+  // Keep the room in the comfort band: AC on when it gets warm, off when it gets cool.
+  const { tempC, acOn } = pet.room;
+  if ((tempC >= 26 && !acOn) || (tempC <= 24 && acOn)) actions.push({ kind: 'ac' });
   return actions;
 }
 
@@ -82,13 +85,18 @@ describe('a very diligent player', () => {
   });
 
   it('is still hit by bad luck now and then, and medicine handles it', () => {
-    // Over many seeds somebody wakes up sick (2% a morning) and is cured in time.
+    // Over many seeds somebody wakes up sick (2% a morning) and is cured in time. The only thing
+    // a diligent player cannot prevent is the rare shock when the room turns too hot or cold.
     let cures = 0;
-    for (let seed = 1; seed <= 40; seed++) {
+    let survivors = 0;
+    const n = 40;
+    for (let seed = 1; seed <= n; seed++) {
       const { state, events } = play(hatch(seed), at(40, 12), ctx, false);
-      expect(state.dead, `seed ${seed}`).toBeNull();
+      if (state.dead) expect(state.dead.cause, `seed ${seed}`).toBe('shock');
+      else survivors++;
       cures += events.filter((e) => e.type === 'cured').length;
     }
     expect(cures).toBeGreaterThan(0);
+    expect(survivors).toBeGreaterThanOrEqual(n - 6);
   });
 });

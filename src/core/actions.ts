@@ -3,6 +3,7 @@ import type { GameEvent } from './events';
 import { chance } from './rng';
 import { bathOpen, bathe, cure } from './rules/health';
 import { raise } from './rules/meters';
+import { toggleAc } from './rules/temperature';
 import type { PetState } from './state';
 import { METER_MAX, isHalted } from './state';
 
@@ -19,6 +20,7 @@ export type Action =
   | { kind: 'pet' }
   | { kind: 'educate' }
   | { kind: 'bath' }
+  | { kind: 'ac' }
   | { kind: 'medical' }
   | { kind: 'check' }
   | { kind: 'clock' };
@@ -132,6 +134,10 @@ export function act(
 
     case 'medical':
       cure(state, nowMs, events);
+      break;
+
+    case 'ac':
+      toggleAc(state, ctx, nowMs, events);
       break;
 
     case 'check':

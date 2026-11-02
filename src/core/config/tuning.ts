@@ -68,10 +68,49 @@ export interface Tuning {
       /** Happiness levels lost on every dirty check (DIRT-10, provisional). */
       happinessDropPerCheck: number;
     };
-    /** Checks a condition must last before death checks start (DEATH-07). */
-    deathOnsetChecks: Record<'sick' | 'hunger' | 'thirst' | 'lowHappiness', Range>;
+    /**
+     * Awake-equivalent checks a condition must last before death checks start (DEATH-07). A night
+     * counts at the attenuated rate (see `Danger`), so a real day is about 56 of them: 12 awake
+     * hours (48 checks) plus 12 sleeping hours at 1/6 (8 checks).
+     */
+    deathOnsetChecks: Record<
+      'sick' | 'hunger' | 'thirst' | 'lowHappiness' | 'tooHot' | 'tooCold',
+      Range
+    >;
     /** Bath is allowed this many minutes before bedtime (DIRT-06). */
     bathWindowMinutes: number;
+  };
+
+  temperature: {
+    /** Room temperature after hatching, in the comfort band (Q-AC-1). */
+    start: number;
+    /** The room never gets colder than this (AC on) or hotter than that (AC off) (TEMP-06). */
+    min: number;
+    max: number;
+    /** The comfort band: 24 to 26 degrees (TEMP-01). */
+    band: { low: number; high: number };
+    /** TOO_COLD can happen at or below this, TOO_HOT at or above that (TEMP-07/08). */
+    coldAtOrBelow: number;
+    hotAtOrAbove: number;
+    /** Chance per awake check that the room moves one degree (TEMP-05, TEMP-09, provisional). */
+    moveChance: number;
+    /** The one-off bump toward comfort when the AC is switched the right way (TEMP-13). */
+    bump: Range;
+    /** Temperature the room is reset to while the pet sleeps and is not suffering (SLEEP-10). */
+    comfortOnSleep: number;
+    /** Entering TOO_COLD / TOO_HOT (TEMP-07, TEMP-17), all provisional (Q-AC-1, Q-AC-4). */
+    entry: {
+      /** Chance per awake check at the threshold temperature... */
+      baseChance: number;
+      /** ...plus this for every further degree away from comfort. */
+      perDegree: number;
+      /** On entry: chance of becoming SICK, of dying right away, and happiness levels lost. */
+      sickChance: number;
+      deathChance: number;
+      happinessDrop: number;
+    };
+    /** While in a TOO state, happiness drops one level every this many awake checks. */
+    happinessDropEveryChecks: number;
   };
 
   species: {
@@ -124,6 +163,26 @@ export const DEFAULT_TUNING: Tuning = {
     educateGain: 1,
   },
 
+  temperature: {
+    start: 25,
+    min: 16,
+    max: 40,
+    band: { low: 24, high: 26 }, // TEMP-01
+    coldAtOrBelow: 23, // TEMP-07
+    hotAtOrAbove: 27, // TEMP-08
+    moveChance: 0.25, // about one degree an hour awake: out of the band in 1 to 2 hours (TEMP-09)
+    bump: { min: 2, max: 3 }, // 19 -> 21 or 22 (TEMP-13)
+    comfortOnSleep: 25,
+    entry: {
+      baseChance: 0.1,
+      perDegree: 0.05,
+      sickChance: 0.25,
+      deathChance: 0.01,
+      happinessDrop: 1,
+    },
+    happinessDropEveryChecks: 4,
+  },
+
   health: {
     wakeSickChance: { lightOff: 0.02, lightOn: 0.6 }, // SLEEP-03 (accepted defaults)
     escalation: { start: 0.2, step: 0.1 }, // DIRT-09, COND-06
@@ -134,9 +193,11 @@ export const DEFAULT_TUNING: Tuning = {
     },
     deathOnsetChecks: {
       sick: { min: 16, max: 24 }, // 4 to 6 h
-      hunger: { min: 192, max: 240 }, // empty for 2 days+ (upper end provisional)
-      thirst: { min: 96, max: 120 }, // empty for 1 day+ (upper end provisional)
-      lowHappiness: { min: 96, max: 192 }, // lowest level for 1 to 2 days
+      hunger: { min: 112, max: 144 }, // empty for 2 days+ (upper end provisional)
+      thirst: { min: 56, max: 72 }, // empty for 1 day+ (upper end provisional)
+      lowHappiness: { min: 56, max: 112 }, // lowest level for 1 to 2 days
+      tooHot: { min: 24, max: 32 }, // 6 to 8 h
+      tooCold: { min: 24, max: 32 }, // 6 to 8 h
     },
     bathWindowMinutes: 60, // DIRT-06
   },

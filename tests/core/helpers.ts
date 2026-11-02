@@ -41,7 +41,10 @@ export function calmTuning(): Tuning {
     hunger: never,
     thirst: never,
     lowHappiness: never,
+    tooHot: never,
+    tooCold: never,
   };
+  tuning.temperature.moveChance = 0; // the room stays at 25 degrees
   return tuning;
 }
 

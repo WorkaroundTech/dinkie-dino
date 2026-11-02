@@ -5,6 +5,7 @@ import { chance, randInt } from '../rng';
 import type { DeathCause, PetState } from '../state';
 import { bedtimeMinutes } from './sleep';
 import { lower } from './meters';
+import { DECAY_SCALE } from './needs';
 import type { LocalTime } from '../time';
 
 /** The chance of the n-th roll of an escalating check: 20%, 30%, 40%, ... up to 100% (COND-06). */
@@ -142,7 +143,14 @@ export function bathOpen(pet: Readonly<PetState>, local: LocalTime, ctx: Context
 }
 
 type ClockCause = keyof Tuning['health']['deathOnsetChecks'];
-const CLOCK_CAUSES: readonly ClockCause[] = ['sick', 'hunger', 'thirst', 'lowHappiness'];
+const CLOCK_CAUSES: readonly ClockCause[] = [
+  'sick',
+  'hunger',
+  'thirst',
+  'lowHappiness',
+  'tooHot',
+  'tooCold',
+];
 
 /** Whether the condition behind a death cause currently holds. */
 function inDanger(pet: Readonly<PetState>, cause: ClockCause): boolean {
@@ -155,16 +163,21 @@ function inDanger(pet: Readonly<PetState>, cause: ClockCause): boolean {
       return pet.needs.thirst === 0;
     case 'lowHappiness':
       return pet.needs.happiness === 0;
+    case 'tooHot':
+      return pet.room.zone === 'tooHot';
+    case 'tooCold':
+      return pet.room.zone === 'tooCold';
   }
 }
 
 /**
  * One check of the death clocks (DEATH-07, DEATH-08, SLEEP-12).
  *
- * A clock starts when its condition starts and disappears when the condition ends. It counts every
- * check, asleep or not. Once it has run `onsetChecks`, each awake check rolls for death with a
- * rising chance. Nothing is rolled while asleep, so at wake-up the player gets a chance to save
- * the pet, and the first roll after waking is at the following check.
+ * A clock starts when its condition starts and disappears when the condition ends. It advances
+ * every check, but only at the attenuated night rate while asleep. Once it has run `onsetChecks`,
+ * each awake check rolls for death with a rising chance. Nothing is rolled while asleep, so at
+ * wake-up the player gets a chance to save the pet, and the first roll after waking is at the
+ * following check.
  */
 export function updateDangers(
   pet: PetState,
@@ -175,6 +188,9 @@ export function updateDangers(
   events: GameEvent[],
 ): void {
   const { escalation, deathOnsetChecks } = ctx.tuning.health;
+  const step = awakeInterval
+    ? DECAY_SCALE
+    : Math.round(DECAY_SCALE / ctx.tuning.needs.sleepAttenuation);
 
   for (const cause of CLOCK_CAUSES) {
     if (!inDanger(pet, cause)) {
@@ -185,15 +201,15 @@ export function updateDangers(
     if (!danger) {
       const { min, max } = deathOnsetChecks[cause];
       pet.dangers[cause] = {
-        checks: 0,
+        progress: 0,
         onsetChecks: randInt(pet.seed, tick, `onset:${cause}`, min, max),
         rolls: 0,
       };
       continue;
     }
 
-    danger.checks += 1;
-    if (!awakeInterval || danger.checks < danger.onsetChecks) continue;
+    danger.progress += step;
+    if (!awakeInterval || danger.progress < danger.onsetChecks * DECAY_SCALE) continue;
 
     const p = escalatingChance(escalation.start, escalation.step, danger.rolls);
     danger.rolls += 1;

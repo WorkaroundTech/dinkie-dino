@@ -350,7 +350,7 @@ describe('death clocks (DEATH-01, DEATH-07, DEATH-08, SLEEP-12)', () => {
     const pet = hatch(ctx, 1, at(0, 8));
     pet.needs.thirst = 0;
     const started = advance(pet, at(0, 8, 15), ctx).state;
-    expect(started.dangers.thirst).toEqual({ checks: 0, onsetChecks: 96, rolls: 0 });
+    expect(started.dangers.thirst).toEqual({ progress: 0, onsetChecks: 96, rolls: 0 });
 
     const quenched = act(started, { kind: 'drink' }, at(0, 8, 15), ctx).state;
     expect(advance(quenched, at(0, 8, 30), ctx).state.dangers.thirst).toBeUndefined();
@@ -451,10 +451,14 @@ describe('default pacing against the targets (DEATH-05, DEATH-06)', () => {
   });
 
   it('does not starve or dehydrate within the first day', () => {
-    // (It can still fall sick at the first wake-up roll and die of that.)
+    // (It can still fall sick or overheat on its first day and die of that.)
     for (let seed = 1; seed <= 150; seed++) {
       const { dead } = advance(hatch(ctx, seed, at(0, 12)), at(1, 12), ctx).state;
-      expect(dead === null || dead.cause === 'sick', `seed ${seed}`).toBe(true);
+      const cause = dead?.cause;
+      expect(
+        cause === undefined || !['hunger', 'thirst', 'lowHappiness'].includes(cause),
+        `seed ${seed}`,
+      ).toBe(true);
     }
   });
 
