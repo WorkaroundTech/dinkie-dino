@@ -165,7 +165,7 @@ The thresholds below use cold as the example; hot is the mirror image 🔶.
 | TEMP-14 | **The bump does not stack.** Turning the AC on and off repeatedly gives no extra bumps. 🔶 Implementation: at most **one bump per excursion**, and the "bump available" flag resets when the temperature is back inside the band. | ✅ / 🔶 mechanism |
 | TEMP-15 | While still outside the band after the bump, the random chance to **enter TOO_COLD keeps running** (TEMP-07). The player can still end up in TOO_COLD during the recovery. | ✅ |
 | TEMP-16 | If TOO_COLD occurs during the recovery and the player does nothing more, the temperature keeps ticking up. When it reaches **24 °C** the state **vanishes by itself**, and **happiness drops a little**, much less than if the room had stayed too cold. Likewise at **26 °C** for TOO_HOT. | ✅ outcome / 🔶 mechanism |
-| TEMP-17 | **Entering** TOO_COLD or TOO_HOT **raises the chance of getting SICK** (with a **small chance of dying right away**) and **drops happiness**. 🔶 Modelled as a one-time roll on entry plus a raised sickness hazard while the state lasts. Magnitudes ❓ tunable. | ✅ / 🔶 mechanism |
+| TEMP-17 | **Entering** TOO_COLD or TOO_HOT **raises the chance of getting SICK** (with a **small chance of dying right away**) and **drops happiness**. 🔶 Modelled as a one-time roll on entry plus a raised sickness hazard while the state lasts. Magnitudes ❓ tunable. | ✅ / 🔶 mechanism Default instant-death chance after M3: **0.2%** (a 1% placeholder was the top killer, doc 15). |
 | TEMP-18 | 🔶 Edge: any AC toggle while in a TOO state snaps and clears it, even the "wrong-direction" one (e.g. switching the AC *on* while cold with the AC already off). | 🔶 |
 
 Worked example (cold side):

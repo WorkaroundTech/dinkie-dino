@@ -77,6 +77,17 @@ Decided rules live in [08](08-target-rules.md). Priority: **P0** blocks the simu
 
 ---
 
+## Pacing questions (M3, round 14)
+
+From the simulator ([15](15-pacing-report.md)); the numbers are there.
+
+| ID | Question | Proposed default |
+|----|----------|------------------|
+| **Q-PACE-1** | **Temperature pacing.** With the faithful drift (out of the comfort band in 1 to 2 hours) the AC asks for about **hourly** attention: even three visits a day lose 48% of pets and two lose all. Options: **A** keep it (the toy's high-maintenance feature; "two visits a day" applies to the needs only), **B** a selectable *relaxed* profile that slows the drift and softens the sickness on entry, **C** a global time scale. | A as the default, plus B or C as a *relaxed* setting |
+| **Q-PACE-2** | **Dirtiness rhythm.** A bath in the pre-bed window restarts a 16 to 20 hour timer, so the pet is dirty again by midday, and an evening-only visitor loses the pet on day 1 (dirty at wake-up, then sick, then dead). Is that right for the toy, or should the evening bath keep the pet clean through the next day (a longer timer, 24 hours or more)? | Ask the toy (test B2); otherwise 24 to 28 hours |
+| **Q-PACE-3** | Should a pet left completely alone for **one** day usually survive? Today dirt and heat kill it in about a day; a pet fed nothing but otherwise cared for survives to about 1.9 days, as you described. | Keep, unless a missed day should be forgiven |
+
+
 ## Localization questions (round 13)
 
 Details and the draft glossary are in [14](14-localization.md). Proposed defaults in brackets.

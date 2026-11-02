@@ -152,7 +152,8 @@ export const DEFAULT_TUNING: Tuning = {
   initial: { hunger: 4, thirst: 4, happiness: 2, education: 0, weightKg: 5 }, // Q-START-1, Q-WEIGHT-1
 
   needs: {
-    checksPerPoint: { hunger: 6, thirst: 4, happiness: 12 }, // provisional (PACE-01)
+    // Tuned with the simulator so that two visits a day are enough (PACE-01): see tools/sim.
+    checksPerPoint: { hunger: 8, thirst: 8, happiness: 18 },
     sleepAttenuation: 6, // SLEEP-11: 4 to 8, default 6
   },
 
@@ -212,11 +213,13 @@ export const DEFAULT_TUNING: Tuning = {
     moveChance: 0.25, // about one degree an hour awake: out of the band in 1 to 2 hours (TEMP-09)
     bump: { min: 2, max: 3 }, // 19 -> 21 or 22 (TEMP-13)
     comfortOnSleep: 25,
+    // deathChance is 0.2%: the 1% placeholder killed a quarter of the pets of players who cannot track
+    // the AC, because they enter these states so often (tuned with the simulator, doc 15).
     entry: {
       baseChance: 0.1,
       perDegree: 0.05,
       sickChance: 0.25,
-      deathChance: 0.01,
+      deathChance: 0.002,
       happinessDrop: 1,
     },
     happinessDropEveryChecks: 4,
