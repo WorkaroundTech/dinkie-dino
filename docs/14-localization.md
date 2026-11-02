@@ -9,7 +9,7 @@ Status: **decided in principle (round 13); details are proposals** for your appr
 | I18N-01 | The app is **multilingual**. **Brazilian Portuguese (`pt-BR`) is the primary language** and the source of truth for every text. **English (`en`)** ships alongside it. **Latin American Spanish (`es-419`)** comes later. | ✅ decided |
 | I18N-02 | The simulation core (`src/core`) and the simulator contain **no user-facing text**. Events and states are codes (`gotSick`, `tooHot`, `hungry`, …); the app layer turns them into words. | ✅ (already true) |
 | I18N-03 | The **art contains no text** except universal symbols: numbers, `°C`, `kg`, and the education grade letters (A+ to E+, as on the toy). | ✅ proposed |
-| I18N-04 | The brand name **Dinkie Dino** and **pet names** are never translated. | ✅ |
+| I18N-04 | The brand name **Dinkie Dino** is never translated. (Pets have no names, PET-01.) | ✅ |
 | I18N-05 | Language is chosen from the browser's language list on first run, can be changed in Settings, and the choice is saved. | 🔶 proposed |
 | I18N-06 | Adding a language is **content work only**: a new catalog file, no code changes. The type system and tests make an incomplete catalog impossible to ship. | ✅ goal |
 
@@ -19,7 +19,7 @@ The LCD itself is symbolic (sprites, numbers, units), so the text lives in the *
 
 | Area | Examples |
 |------|----------|
-| First run | welcome, set the wake-up time, "add to home screen" instructions (differ for iOS and Android), choose a name if pets are named |
+| First run | welcome, set the wake-up time, "add to home screen" instructions (differ for iOS and Android) |
 | The device | accessible names and tooltips for the 10 icons and the 5 buttons; a visually hidden description of what the pet is doing and needing, for screen readers (the LCD is a canvas) |
 | Settings | language, wake-up time, adult bedtime, Jokenpo rounds, sound, reset |
 | Reset | long-press hint, confirmation title, body and buttons |
@@ -43,7 +43,6 @@ The string count is small (roughly 100 to 150), and the dependency policy is "on
 - **Document language:** `<html lang>` follows the active locale; the manifest's `lang` is `pt-BR`.
 - **Layout:** Portuguese and Spanish run about 20 to 40% longer than English, so UI chrome must wrap and grow rather than assume English widths.
 - **Fonts:** system UI fonts cover the needed characters (á ã ç é í ó õ ú ñ ¿ ¡); no custom font is needed.
-- **Pet names:** length counted in **graphemes** (`Intl.Segmenter`), not UTF-16 units, so accents and emoji count as one.
 
 ### Tests (all in CI)
 
@@ -58,7 +57,7 @@ The string count is small (roughly 100 to 150), and the dependency policy is "on
 
 ## 14.4 Glossary (draft, for you to correct)
 
-You know the Brazilian toy's actual wording; the **pt-BR column is my proposal**, not a record of what was printed on it. The Spanish column is a placeholder for later and needs a native reviewer.
+There was **no Brazilian manual** to take the wording from, so the **pt-BR column is drafted from scratch** and is my proposal for you to correct. The Spanish column is a placeholder for later and needs a native reviewer.
 
 | Concept | pt-BR (proposed) | en | es-419 (later) |
 |---------|------------------|----|----------------|
@@ -108,4 +107,4 @@ You know the Brazilian toy's actual wording; the **pt-BR column is my proposal**
 
 ## 14.7 Open questions
 
-See Q-I18N-1…8 in [07](07-open-questions.md): glossary wording, the default for unmatched languages, 12 or 24-hour clock, grade letters, pet-name rules, the Spanish timeline, README language, and one URL versus one per language.
+Decided in round 15: the glossary is drafted from scratch (and reviewed by you), an unmatched browser language shows **English**, the clock is **24-hour**, the grades **A+ to E+** stay as on the toy, Spanish comes **after v1 with a native reviewer**, the docs stay in English (a pt-BR README later), and there is **one URL** with an in-app language switch. Nothing is open here except the wording of the glossary itself.

@@ -1,10 +1,6 @@
 # 7. Open questions & decisions
 
-Each question has the **evidence** (what the legacy code suggests) and a **proposed default**. Reply "default" to accept it. Many can be settled by checking the real toy: see [09](09-toy-verification-checklist.md) (checklist refs like *A4* point there).
-
-Decided rules live in [08](08-target-rules.md). Priority: **P0** blocks the simulation design; **P1** needed before building that feature; **P2** can wait.
-
----
+The decisions made so far are in the log below; decided rules live in [08](08-target-rules.md). The **open questions are numbered** at the end so they can be answered by number; the bracketed text is the proposed default. Many can be settled by checking the real toy: see [09](09-toy-verification-checklist.md).
 
 ## Decisions log
 
@@ -74,101 +70,39 @@ Decided rules live in [08](08-target-rules.md). Priority: **P0** blocks the simu
 | 11 | Meters | **Hunger and thirst range 0–8** (confirmed against the legacy code). → NEED-01 |
 | 13 | I18N | The app is **multilingual**: **pt-BR primary**, **English** alongside, **Latin American Spanish later**. → I18N-01, [14](14-localization.md) |
 | 12 | A1–A7 | **Architecture approved** (stack, counter-based randomness, 15-minute snapping). App name **Dinkie Dino**; MIT; git initialised; hosting on **GitHub Pages**. A8 (single vs. multiple pets) and A9 (pacing) not answered yet: proceeding with the recommended defaults. → [13](13-architecture.md) |
+| 15 | Q-UI-3 / A8 | **One pet in v1**, the data model ready for several. **Pets have no names.** If there are several later, each is identified by an image or idle animation of its current age and species. |
+| 15 | Q-UI-2 | Layout is **undecided**: iterate on options when the UI is prepared. **Keyboard controls are dropped.** |
+| 15 | Q-UI-1 | **Four shell colourways** (original art): white with red buttons, red with yellow buttons, teal with yellow buttons, yellow with red buttons. |
+| 15 | Q4–Q10 | First run uses the device time and asks only for the **wake-up time**. The **Clock button shows only the time**; the age is on a Check screen. **Mute switch** plus **hold Left+Right**; the Esc+Enter chord is skipped. **Reset**: pinhole, long-press and confirm, then ask for the wake-up time. **Debug panel**: yes. **Export/import**: later. |
+| 15 | Q-I18N | There was **no Brazilian manual**, so the pt-BR glossary is drafted from scratch. Unmatched browser language shows **English**; **24-hour** clock; grades **A+ to E+ unchanged**; **Spanish** after v1 with a native reviewer; docs stay in English (a pt-BR README later); **one URL** with an in-app language switch. Pet names no longer exist. |
+| 15 | Q-PACE-1 | **AC pacing:** the default asks for a look about **every 4 hours**; a **relaxed** mode about **every 8** (the room drifts half as fast). Implemented as `Settings.pacing`. Suffering now starts gently (3% a check, +3% per degree) with 10% sickness and 0.2% instant death on entry. → TEMP-09, [15](15-pacing-report.md) |
+| 15 | Q-PACE-2 | **Dirt timer 20 to 24 hours** after a bath. → DIRT-02 |
+| 15 | Q-PACE-3 | A pet left alone **should survive at least a day**: 82% do on normal pacing, 93% on relaxed; all are dead by two days. → [15](15-pacing-report.md) |
+| 16 | 22, 23 | **Care score:** I draft it ([16](16-care-score-proposal.md)); the grace of a care mistake is the same as the condition's grace. |
+| 16 | 24–31 | Dirty checks lower happiness **every check**; after medicine they restart from 20% but **roll first at the next check**; **death checks start at 10%** (then 20%, 30%…); the night counts attenuated; "low happiness" and "too long hungry or thirsty" mean the **lowest level / completely empty**; the room resets to 25 °C at bedtime and the AC stays as left. → DEATH-08 |
+| 16 | 32–34 | **Bedtimes** are fixed per stage and **capped by the player's latest-bedtime setting**. The toy has three tiers (**blobs 19:00, legs 20:00, adult 22:00**); tail 19:30 and teenager 21:00 are an experiment. **The player must be shown the expected bedtime.** → SLEEP-05..07, BED-01 |
+| 16 | 35–37 | AC rules as read (a switch while suffering **cures** TOO_HOT / TOO_COLD); the entry numbers are fine; start 25 °C, shown as a number. |
+| 16 | 38–41 | **Hungry, thirsty and sad only when the meter is completely empty**; what they cause starts at the next check. **Hungry and thirsty have no sprite**; the priority of the rest is **SICK, TOO_HOT/COLD, SAD, DIRTY**. The pet **beeps every 5 minutes**, the same tune for every condition. Sleeping has a sprite and does not call; overweight has none. → COND-01..05 |
+| 16 | 42, 43 | Weight numbers are **placeholders** until the toy is checked. **New weight system:** caloric foods (Apple, Hamburger, Noodles) add weight 75% of the time, **Ice Cream always**, non-caloric (Carrot, Chicken Thigh) never, except to a pet below its healthy range; a **won game burns weight 50%** of the time; weight **burns off over time**, faster when heavier. → WEIGHT-03..07 |
+| 16 | 44–50 | **Hatching:** empty hunger, thirst and education, happiness in the middle, **light on**, AC off; the egg is only an animation. No other causes of sickness. **Refuse food when full, and food that does not suit the species even when hungry.** No discipline mechanic. A visual clue for AC / light on is to be studied. No other minigames. → LIFE-01, FOODSP-01 |
+| 16 | 51–53 | A lit room at night stays at **60%**; Angel and Demon stay **locked until reset** in v1; the Check screen shows weight in kg and age as a number. |
+| 16 | 54–56 | The new survival numbers are **enough**. A **bath window in the first hour after waking** is added. Shell colour and pacing can be changed at any time. → DIRT-06, SURVIVE-01 |
 
 ---
 
-## Pacing questions (M3, round 14)
+# Open questions
 
-From the simulator ([15](15-pacing-report.md)); the numbers are there.
+Numbered so you can answer by number. The bracketed text is my proposed default. Questions 1 to 56 are answered (see the decisions log).
 
-| ID | Question | Proposed default |
-|----|----------|------------------|
-| **Q-PACE-1** | **Temperature pacing.** With the faithful drift (out of the comfort band in 1 to 2 hours) the AC asks for about **hourly** attention: even three visits a day lose 48% of pets and two lose all. Options: **A** keep it (the toy's high-maintenance feature; "two visits a day" applies to the needs only), **B** a selectable *relaxed* profile that slows the drift and softens the sickness on entry, **C** a global time scale. | A as the default, plus B or C as a *relaxed* setting |
-| **Q-PACE-2** | **Dirtiness rhythm.** A bath in the pre-bed window restarts a 16 to 20 hour timer, so the pet is dirty again by midday, and an evening-only visitor loses the pet on day 1 (dirty at wake-up, then sick, then dead). Is that right for the toy, or should the evening bath keep the pet clean through the next day (a longer timer, 24 hours or more)? | Ask the toy (test B2); otherwise 24 to 28 hours |
-| **Q-PACE-3** | Should a pet left completely alone for **one** day usually survive? Today dirt and heat kill it in about a day; a pet fed nothing but otherwise cared for survives to about 1.9 days, as you described. | Keep, unless a missed day should be forgiven |
-
-
-## Localization questions (round 13)
-
-Details and the draft glossary are in [14](14-localization.md). Proposed defaults in brackets.
-
-| ID | Question | Proposed default |
-|----|----------|------------------|
-| **Q-I18N-1** | Is the **pt-BR glossary** right? Do you remember the Portuguese wording printed on the Brazilian toy or its manual? | Use my draft, you correct it |
-| **Q-I18N-2** | A visitor whose browser language is neither Portuguese, English nor Spanish: show **English** or **pt-BR**? | English (widely understood); Brazilians get pt-BR automatically |
-| **Q-I18N-3** | **Clock format** in settings and the clock screen: 24-hour always (like the toy?) or the locale's habit (24 h in Brazil, 12 h for US English)? | 24-hour everywhere |
-| **Q-I18N-4** | **Education grades** A+ to E+ stay as on the toy in every language? | Yes, toy fidelity |
-| **Q-I18N-5** | **Pet names**: 15 characters (counted as visible characters), accents and emoji allowed? | 15 graphemes, any letters, digits and emoji, trimmed |
-| **Q-I18N-6** | **Spanish**: when, and who reviews it? | After v1, with a native reviewer |
-| **Q-I18N-7** | **README and docs** stay in English? A short pt-BR README for the public repo? | Docs in English, a pt-BR README later |
-| **Q-I18N-8** | **One URL** with an in-app language switch, or one path per language (`/en/`)? | One URL and a switch (the save is per origin, so one address is simpler) |
-
-## Architecture decisions (round 12)
-
-The architecture proposal is [13](13-architecture.md). **Decisions A1–A9 (§13.12) need your approval**: stack, counter-based randomness, snapping scheduled times to 15-minute multiples, app name, license, git init, hosting, single vs. multiple pets, pacing.
-
-## P0: follow-ups from round 11
-
-Unruled blog points: C10 lights-on chance, C11 Angel/Demon death, C13 weight in kg and age, C14 pacing, and PROP-01…13 except sound ([12](12-blog-guide-review.md)).
-
-| ID | Question | Why I'm asking | Proposed default |
-|----|----------|----------------|------------------|
-| **Q-DIRT-6** | On each dirty check, does happiness drop **by one level every 15 minutes** (reaching VerySad within an hour) or **once** when the checks start? If the pet is cured but still dirty, do the dirty checks resume from 20%? | DIRT-10 | −1 level per check; they resume. |
-| **Q-DEATH-3** | Death-check numbers and meaning: (a) the chance per check once the onset passes (default 20% +10% per check); (b) does the onset timer count the sleeping hours (implementation changed the default to **an attenuated night**, so a night does not make the morning lethal, see DEATH-08); (c) what "low happiness" means (the lowest level?) and what "hunger for too long" means (empty, or below a threshold?). | DEATH-07/08 | (a) 20%, +10%; (b) attenuated, see DEATH-08; (c) lowest level; empty. |
-| **Q-SLEEP-7** | Remaining night details: (a) comfort reset at **bedtime** to **25 °C**; (b) the AC stays as the player left it. | SLEEP-10 | Both yes. |
+57. **Care score draft** ([16](16-care-score-proposal.md)): the list of mistakes (sick, too hot, too cold, dirty, light left on, hungry, thirsty, sad), their weights (1 to 3 points), their graces (15 minutes to 2 hours) and the threshold (**Angel at 32 points or fewer**, about 1.7 a day). Accept, or what should change? [Accept as drafted, then tune]
+58. **Triceratops foods:** you said every species has one caloric and one non-caloric food. Triceratops has Noodles (caloric); which is its non-caloric one? I assumed it, being "pasta / everything", **accepts all foods**. [Accepts all]
+59. **Before the species is known** (small and big blob, and the first days of the tail stage) the pet accepts any food, since the diet decides the species. Correct? [Yes]
+60. **Ice Cream** suits every species (a treat)? [Yes]
+61. **What does a hungry or thirsty pet look like,** with no sprite of its own? I assumed the normal idle animation, a beep every 5 minutes, and the Check screen showing the empty bowls or glasses. [Yes]
+62. **Light on at hatching:** a pet that hatches in the evening goes to sleep with the light on and wakes up sick 60% of the time unless the player switches it off. Intended, as a first lesson? [Yes]
+63. **A newborn nobody looks at is gone in about a day** (it hatches with empty hunger and thirst). Acceptable? [Yes]
+64. **Showing the expected bedtime** (BED-01): where? [On the clock screen, "sleeps at 19:00", and in the settings next to the latest-bedtime setting]
 
 ## Tuning backlog (not questions)
 
-Numbers to adjust by play-testing, all kept in config and reachable from the debug panel. Defaults are in the rule docs. **Needs / pace:** decay rates per meter (PACE-01: ≥ 2 interactions a day); the night attenuation; the temperature tick rate and drift; dirt threshold 16–20 h and onset 2–3 h; bedtimes per stage. **Chances:** SICK at wake-up (2% / 60%), TOO_HOT/COLD entry, dirty-check escalation, loss-streak happiness drop (50%), over-play drop. **Deaths:** the onset range and the check chance per cause (DEATH-07/08), targeting DEATH-06 (≈ 2 days unattended) and DEATH-05 (≈ under 4 wake-ups when never fed). **Weight:** scale, "too heavy" threshold, Ice Cream gain 70%.
-
-## P0: follow-ups from round 4
-
-| ID | Question | Why I'm asking | Proposed default |
-|----|----------|----------------|------------------|
-| **Q-AC-1** | **AC numbers.** (a) Tick period and the probability of a move: how long to go from 25 °C to ≤ 23 (AC on) or ≥ 27 (AC off)? (b) Chance per tick of entering TOO_COLD/HOT as it gets further from the band. (c) Initial temperature after hatching. (d) Is the temperature shown as a number in Check? (📖 the blog says yes: "25°C") | TEMP-05/09 | 1 °C steps; **~15 min** out of the band (📖 blog: "check every ~15 minutes"); chance rising linearly with distance; start 25 °C; numeric display. Test B6. |
-| **Q-AC-3** | **Confirm my reading of the AC rules.** (a) The bump is +2 to +3 °C, only when you toggle in the *correcting* direction (AC off when cold, AC on when hot). (b) "No stacking" = **one bump per excursion**; re-armed when the room is back in the band. (c) Hot side is the exact mirror (snap to 26, bump down). (d) **Any** toggle in a TOO state snaps and clears it. (e) TOO-state entry = one roll + raised sickness hazard while it lasts. | TEMP-13/14/17/18 | As described in each rule. |
-| **Q-AC-4** | **Numbers for TOO_COLD/HOT.** SICK chance on entry, chance of instant death (small), happiness drop on entry and per hour in the state, and the smaller penalty when it clears by itself. | TEMP-16/17 | Entry: SICK +25%, death 1%, happiness −1 step; −1 step per hour after. Tunable. |
-| **Q-COND-1** | **Conditions.** (a) Thresholds for HUNGRY / THIRSTY / SAD (which meter values). (b) **Priority** when several apply: sick > cold/hot > hungry > thirsty > sad? Or alternate between sprites? (c) Beep interval, and does each condition have a different beep? (d) Do **sleeping** and **overweight** also have their own sprite and calls? (DIRTY already has one.) | COND-02…05 | (a) ≤ 2 of 8 for hungry/thirsty, lowest happiness level for sad; (b) that order, showing the top one; (c) every ~60 s, same beep; (d) sleeping has its sprite, no call. |
-| **Q-SLEEP-3** | **Bedtime details.** (a) For blobs: is it a fixed time or a window (19:00–19:30) drawn each night? (b) Values for the in-between stages and the teenager. (c) Configuration: the player sets the adult bedtime and earlier stages follow by offsets? (d) What does the sleeping pet and the "light on" pet look like, and do needs decay slower while asleep? | SLEEP-05…08 | (a) fixed at the start of the window; (b) table in SLEEP-06; (c) yes; (d) half-rate decay asleep. Test B5. |
-| **Q-WEIGHT-1** | **Weight.** What is the weight scale and the "too heavy" threshold; how is weight lost (Play, time, Medicine, hunger?); the sickness and death chances when too heavy, and why pre-adults are more at risk. | WEIGHT-01/02 | Weight 1–5; heavy from 4 (3 for pre-adults); −1 per mini-game win or per ~12 h. Tunable. |
-| **Q-ATTN-2** (deferred) | **Segments.** What indicates the AC/light is on? (📖 The blog says there is **no attention icon**: only the beep and the sprite, so no blinking segments.) | LCD-06 | No attention blink; AC and light each get a small indicator if the toy has one. |
-| **Q-DEATH-1** | **Death timers.** Rough times to death when: never fed (must be < ~4 wake-ups), sick untreated, left dirty, too cold / too hot, too heavy. | DEATH-02/05 | Hunger ~2 days, sick ~1 day, dirty ~2 days. Tunable. |
-| **Q-RESET-1** | **Web reset.** A hidden pinhole needing long-press + confirm: OK? With several pet slots, reset applies to the slot? Does the toy ask to set the clock after a reset (A1)? | RESET-03…05 | Long-press + confirm; per slot; ask for the wake-up time. |
-
-## Deferred
-
-| ID | Topic | Revisit when |
-|----|-------|--------------|
-| **Q-CARE-1** | Care-score factors, weights, grace periods, Angel/Demon threshold | After [11](11-states-and-actions.md) is filled in: mark each action/state good, bad or neutral for care |
-
-## P0: still open from round 0
-
-| ID | Question | Evidence | Proposed default |
-|----|----------|----------|------------------|
-| **Q-LOOP-1** | **Decay rates** for fullness, thirst, mood, education, and the effect of life stage on them. | Nothing in the legacy code. | Check B1, then tune. |
-| **Q-START-1** | Initial stat values after hatching (legacy: VerySad / C+ / empty). Is the egg stage an actual wait or just an animation? Is there a naming step? | A1 | Hatch with half-full stats and Normal mood, after a short crack animation. |
-| **Q-SICK-1** | What makes the pet sick, and how many doses cure it? (You listed "left sick" as a death cause, but not the triggers.) | B3; `sickness_chance` column | Rising chance from being left dirty, extreme temperature, obesity, plus a small base chance; 1 dose cures. |
-
-## P1: per-feature behavior
-
-| ID | Question | Evidence | Proposed default |
-|----|----------|----------|------------------|
-| **Q-FOOD-3** | Should the pet **refuse** when full? | A5 | Yes. |
-| **Q-DISC-1** | Is there a **discipline** mechanic in the toy? | A8 | Drop it. |
-| **Q-CLOCK-1** | What the Clock button does. | A2 | Show time and age in days. |
-| **Q-ATTN-1** | What exactly triggers an attention call and how long before it counts as a "care mistake"? (Calls themselves: COND-02.) | B4 | Beep from the moment the condition starts. |
-| **Q-PLAY-2** | Other games? | | No (v1). |
-
-## P2: product & UX
-
-| ID | Question | Evidence | Proposed default |
-|----|----------|----------|------------------|
-| **Q-BUG-1** | Fix all legacy bugs BUG-01…BUG-11? Several are moot once art and rules are rewritten. | [00](00-overview.md) | Fix/design them out. |
-| **Q-UI-1** | **Device skin & brand name**: a single yellow shell? Legacy had planned colour variants and two "types" (Dinkie Dino vs Rakuraku Dinokun). The new shell is an original design (ASSET-03). | `Device.Color/Type` | One yellow egg shell; app name "Rakuraku Dinokun". |
-| **Q-UI-2** | **Layout**: full skeuomorphic device on phones, or LCD that fills more of the screen; landscape; desktop keyboard controls. Let's iterate with mock-ups before building. | | Scaled device, portrait-first, keyboard support on desktop. |
-| **Q-UI-3** | **Multiple pets**: the real toy has one pet; the 4-slot menu (create/rename/delete via long-press-drag) came from the Android app. Keep it? | MENU-02 | Keep up to 4. |
-| **Q-UI-4** | Languages (EN + pt-BR?). | `strings.xml` | EN + pt-BR. |
-| **Q-UI-5** | Sound: our own effects; add a mute switch. | | Yes. |
-| **Q-UI-6** | Keep a hidden debug panel (force sick, skip time, force growth)? **Strongly recommended now**: a 15–20-day lifecycle can't be tested without a time-travel tool. | | Yes (`?debug=1`). |
-| **Q-DATA-1** | Backup/export of pets. | | JSON export/import later. |
-| **Q-DIST-1** | Hosting, domain, analytics. | | Static host, no analytics. |
+Numbers adjusted by play-testing and the simulator, all kept in `src/core/config/tuning.ts` and reachable from the debug panel. **Needs / pace:** decay rates (a full meter empties in about 12 awake hours), the night attenuation, the room drift (normal 4 hours, relaxed 8), dirt timer 20 to 24 h and onset 2 to 3 h, bedtimes per stage. **Chances:** sickness at wake-up (2% / 60%), suffering entry (3% + 3% per degree), dirty checks (start 20%), death checks (start 10%), loss-streak happiness drop (50%), over-play drop. **Deaths:** the onset range per cause (DEATH-07). **Weight:** every number, until the toy is checked (healthy ranges per stage, 0.25 kg steps, 75% / 100% gain chances, 50% win burn, burn over time). Run `npm run sim` ([15](15-pacing-report.md)) after changing any of them.

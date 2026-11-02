@@ -4,7 +4,7 @@ A browser/PWA recreation of the "Rakuraku Dinokun" (a.k.a. _Dinkie Dino_) virtua
 Tamagotchi clone that was popular in Brazil. The original was an Android app (Java/Eclipse, 2014–2015);
 this project brings it to the web as an installable PWA.
 
-**Current phase: specification complete enough to build; architecture approved (doc 13); milestones M0 (scaffold), M1, M2 (the core engine) and M3 (the simulator and first tuning) done; M4 (UI shell) next, once the pacing questions of doc 15 are answered.**
+**Current phase: specification complete enough to build; architecture approved (doc 13); milestones M0 (scaffold), M1, M2 (the core engine) and M3 (the simulator and the pacing) done; M4 (UI shell, with the i18n module) next.**
 
 The app is called **Dinkie Dino** (the project folder is still named `rakuraku-dinokun-web`). The two historical names, _Dinkie Dino_ and _Rakuraku Dinokun_, belong to the 90s bootleg toys this recreates; all art, code and sound here are original.
 
@@ -18,7 +18,7 @@ npm run dev          # local dev server
 npm test             # unit tests (Vitest)
 npm run typecheck && npm run lint && npm run format:check
 npm run build        # production build into dist/
-npm run sim          # the pacing simulator (see doc 15); --help for options
+npm run sim          # the pacing simulator (see doc 15); --pacing normal|relaxed, --help for options
 ```
 
 **Lockfile hygiene.** `package-lock.json` must resolve every package from the public npm registry, and CI fails otherwise (`npm run check:lockfile`). A machine configured with a private registry mirror writes that mirror into the lockfile whenever dependencies change (a `NPM_CONFIG_REGISTRY` environment variable even outranks the project `.npmrc`). After `npm install` or `npm update`, run `npm run fix:lockfile`, or pass `--registry https://registry.npmjs.org/` to npm.
@@ -61,6 +61,7 @@ Two sources, in this order of precedence:
 | 13  | [Architecture & tech stack](docs/13-architecture.md)                | **Proposal:** layers, simulation engine, time and randomness, config, art/sound pipeline, testing, milestones, decisions to approve |
 | 14  | [Localization](docs/14-localization.md)                             | pt-BR (primary), English, later Latin American Spanish: what is translated, the typed-catalog design, tests, draft glossary         |
 | 15  | [Pacing report](docs/15-pacing-report.md)                           | The simulator (`npm run sim`): what the rules demand of a player, what was tuned, three findings that need your decision            |
+| 16  | [Care score draft](docs/16-care-score-proposal.md)                  | A proposed score for Angel vs Demon (care mistakes per episode), calibrated with the simulator, waiting for your corrections        |
 
 ## Conventions used in these docs
 

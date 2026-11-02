@@ -63,7 +63,7 @@ flowchart TB
 
 | ID | Rule | Status |
 |----|------|--------|
-| LIFE-01 | A new game begins with an **egg**; after the crack animation the pet **hatches** as a small blob. That moment is the pet's birth. | ✅ |
+| LIFE-01 | A new game begins with an **egg**; after the crack animation (an animation only, not a wait) the pet **hatches** as a small blob. That moment is the pet's birth. It hatches with **empty hunger, thirst and education, the happiness meter in the middle, the light on and the AC off** (round 16). | ✅ |
 | LIFE-02 | Growth happens **at the morning wake-up**, counted in **wake-ups since hatching** (decided). The Nth wake-up after hatching is the first wake-up *after* the hatch moment, e.g. hatched Monday 15:00 → wake-up 1 is Tuesday morning, wake-up 2 (big blob) is Wednesday morning. 🔶 Edge: hatching a few hours *before* the wake-up time (e.g. 05:00 hatch, 07:00 wake-up) counts that same morning as wake-up 1. | ✅ counting / 🔶 edge |
 | LIFE-03 | After a long absence, **multiple growths can apply in order** during catch-up (TIME-01). | 🔶 consequence |
 | LIFE-04 | From adult (wake-up 15), the pet transforms into the **final form** at a **random** wake-up between **16 and 20**. It does **not** depend on care (as far as you remember). Uniform draw, made once at hatching from the pet's seed. | ✅ random / 🔶 uniform |
@@ -101,7 +101,7 @@ Species is decided by what the pet is fed during **stages 1 and 2** (Small blob 
 |----|------|--------|
 | DEATH-01 | The pet can die before its final form from these causes (details in DEATH-07): **sick without treatment**, **TOO_HOT / TOO_COLD for too long**, **very low happiness for too long**, **hunger for too long**, **thirst for too long**. Also **too heavy** (WEIGHT-01) and, with a small chance, **straight after entering TOO_HOT / TOO_COLD** (TEMP-17). **Dirty does not kill directly**: it leads to SICK, which does. Old age is the final transformation (DEATH-04). | ✅ |
 | DEATH-07 | **How long a condition must last before death checks start** (round 11): **SICK** untreated **4–6 h+**; **TOO_HOT or TOO_COLD 6–8 h+**; **low happiness (🔶 the lowest level) 1–2 days+**; **hunger (🔶 empty) 2 days+**; **thirst (🔶 empty) 1 day+**. Each onset is drawn within its range, and the "+" means checks begin then and stay on. | ✅ ranges / 🔶 meaning of "low" |
-| DEATH-08 | After the onset, **death checks run every 15 minutes** with an escalating chance (template COND-06). 🔶 Default 20% start, +10% per check; **tunable**. They run only while the pet is awake (SLEEP-12). 🔶 **Changed in implementation (M2):** the onset timers do **not** count a night at full speed: while asleep they advance at the same attenuated rate as needs (SLEEP-11). With full-speed counting, a pet that went to bed suffering woke up with about an 83% chance of dying within the first hour, which is no chance to save it. The onset ranges in DEATH-07 are therefore in *awake-equivalent* time: a real day is about 56 checks. | 🔶 |
+| DEATH-08 | After the onset, **death checks run every 15 minutes** with an escalating chance that **starts at 10%** and rises 10% per check (10%, 20%, 30%…; round 16; the dirty checks stay at 20%). **Tunable.** They run only while the pet is awake (SLEEP-12). The onset timers do **not** count a night at full speed: while asleep they advance at the attenuated rate (SLEEP-11), so a night does not make the morning lethal. The ranges in DEATH-07 are therefore in *awake-equivalent* time: a real day is about 56 checks. What a condition causes starts at the **next** check after it begins. | ✅ |
 | DEATH-02 | The time thresholds for each cause (how long until death). **Not known; to be tuned in play-testing**, with the target in DEATH-06. | ⏸ tuning |
 | DEATH-03 | The death screen is the dead blob with cross and halo (LIFE-10). It **stays** until the player **resets** the toy (§8.12); there is no automatic restart. | ✅ |
 | DEATH-05 | **Starvation invariant:** a pet that is never fed must die *before* the species decision (5th wake-up). So the hunger death timer (DEATH-02) must be shorter than ~4 wake-ups. Ice Cream does not feed (§8.4), so it doesn't postpone starvation either. | ✅ rule / ❓ timer |
@@ -117,7 +117,7 @@ A **hidden** number that records how well the pet was looked after. It is never 
 | ID | Rule | Status |
 |----|------|--------|
 | CARE-01 | A hidden care score exists and picks Angel vs Demon. | ✅ |
-| CARE-02 | Factors, weights, grace periods and the Angel/Demon threshold are **not yet decided**. Candidates you mentioned: dirty too long, too hot too long, sick too long, lights left on at night, hungry too long, "and so on". | ⏸ deferred |
+| CARE-02 | Factors, weights, grace periods and the Angel/Demon threshold: **a draft is in [16](16-care-score-proposal.md)** (care mistakes per episode, Angel at 32 points or fewer), waiting for your corrections. | 🔶 draft |
 | CARE-03 | Time-in-bad-state accumulates during catch-up (TIME-01), so a long absence naturally affects the score. | ✅ consequence |
 | CARE-04 | The score stops accumulating at the final form. | ✅ |
 | CARE-05 | The care score does **not** influence death, growth timing or species. | 🔶 |
@@ -151,7 +151,7 @@ The old "Cool" icon is the **air conditioner (AC) switch**. The player turns the
 | TEMP-06 | Limits: minimum about **16 °C** (AC on), maximum about **40 °C** (AC off). | ✅ "something like" |
 | TEMP-07 | **TOO_COLD:** while the temperature is **23 °C or below**, there is a chance per tick of the pet entering TOO_COLD (higher the colder). The pet asks the player to turn the AC off. | ✅ |
 | TEMP-08 | **TOO_HOT:** mirror image at **27 °C or above**; the pet asks the player to turn the AC on. | 🔶 mirrored |
-| TEMP-09 | Tick period and the probability of a move decide how fast the room changes. **Default pace: roughly 1–2 hours** to drift from 25 °C out of the band (the blog's "every ~15 minutes" was **not adopted**). **Tunable**; test B6. | ✅ default / ❓ tune |
+| TEMP-09 | The probability that the room moves one degree on a check decides how fast it changes. **Default pace (round 15): the AC wants a look about every 4 hours** (a visitor at that interval almost never sees the pet suffer); the **relaxed** pacing halves the drift so a look is needed about every **8 hours** (§8.18). The blog's "every ~15 minutes" was not adopted. **Tunable**; measured with the simulator ([15](15-pacing-report.md)). | ✅ |
 | TEMP-10 | Ticks use the pet's seeded RNG (TIME-02), so catch-up simulates every tick of the time away. The AC stays as you left it, so a long absence can drive the room to an extreme. | ✅ consequence |
 
 ### Correcting with the AC (round 4)
@@ -165,7 +165,7 @@ The thresholds below use cold as the example; hot is the mirror image 🔶.
 | TEMP-14 | **The bump does not stack.** Turning the AC on and off repeatedly gives no extra bumps. 🔶 Implementation: at most **one bump per excursion**, and the "bump available" flag resets when the temperature is back inside the band. | ✅ / 🔶 mechanism |
 | TEMP-15 | While still outside the band after the bump, the random chance to **enter TOO_COLD keeps running** (TEMP-07). The player can still end up in TOO_COLD during the recovery. | ✅ |
 | TEMP-16 | If TOO_COLD occurs during the recovery and the player does nothing more, the temperature keeps ticking up. When it reaches **24 °C** the state **vanishes by itself**, and **happiness drops a little**, much less than if the room had stayed too cold. Likewise at **26 °C** for TOO_HOT. | ✅ outcome / 🔶 mechanism |
-| TEMP-17 | **Entering** TOO_COLD or TOO_HOT **raises the chance of getting SICK** (with a **small chance of dying right away**) and **drops happiness**. 🔶 Modelled as a one-time roll on entry plus a raised sickness hazard while the state lasts. Magnitudes ❓ tunable. | ✅ / 🔶 mechanism Default instant-death chance after M3: **0.2%** (a 1% placeholder was the top killer, doc 15). |
+| TEMP-17 | **Entering** TOO_COLD or TOO_HOT **raises the chance of getting SICK** (with a **small chance of dying right away**) and **drops happiness**. 🔶 One roll on entry plus a raised sickness hazard while the state lasts. **Defaults after M3:** the chance of entering starts at 3% a check at 23 / 27 °C and grows 3% per further degree; sickness on entry 10%; instant death 0.2%; happiness −1, then −1 per hour. All **tunable**. | ✅ / 🔶 numbers |
 | TEMP-18 | 🔶 Edge: any AC toggle while in a TOO state snaps and clears it, even the "wrong-direction" one (e.g. switching the AC *on* while cold with the AC already off). | 🔶 |
 
 Worked example (cold side):
@@ -190,10 +190,10 @@ Pet in TOO_COLD at 18 °C
 | SLEEP-02 | **Light left on while the pet sleeps:** it **hurts the pet's health** and **greatly increases the chance that the pet wakes up SICK**. | ✅ |
 | SLEEP-03 | Evaluated as a **sickness roll at the morning wake-up**. Defaults (accepted): **2%** with the light off, **60%** with it on. **Tunable.** | ✅ defaults accepted |
 | SLEEP-04 | In catch-up, a lamp left on through a night that passed while the app was closed triggers the same roll at the wake-up (TIME-01). Faithful to the toy but harsh on a phone; keep the base values forgiving. | 🔶 |
-| SLEEP-05 | **Bedtime depends on the life stage:** a young blob goes to bed **early (about 19:00–19:30)**, an adult as late as about **22:00**. It is **configurable**, but the stage-based variation stays. | ✅ |
-| SLEEP-06 | 🔶 Proposed table (tunable): small / big blob **19:00–19:30**; blob with tail **20:00**; with legs **20:30**; teenager **21:30**; adult **22:00**. Only blobs are from your memory; the middle values are interpolated and need checking (B5). | 🔶 |
-| SLEEP-07 | 🔶 Configuration: the player sets the **adult bedtime**; earlier stages follow by fixed offsets (so the variability stays). Alternatively a +/- shift applied to all stages. | 🔶 |
-| SLEEP-08 | ❓ Whether the 19:00–19:30 is a fixed time or a window drawn randomly each night, what the sleeping pet looks like, whether needs decay while asleep (TIME-03). | ❓ |
+| SLEEP-05 | **Bedtime depends on the life stage.** The toy has three tiers (round 16): **blobs 19:00, legs 20:00, adult 22:00**. | ✅ |
+| SLEEP-06 | Small and big blob **19:00**; blob with tail **19:30**; with legs **20:00**; teenager **21:00**; adult **22:00**. The tail and teenager times sit between the toy's tiers as an experiment (round 16). **The player must be shown the pet's expected bedtime.** | ✅ toy tiers / 🔶 experiment |
+| SLEEP-07 | The player sets the **latest bedtime** (default 22:00): each stage goes to bed at its own time, **never later than this**, so someone who cannot stay awake for an adult pet can have it sleep earlier. Fixed times, not drawn each night (round 16). | ✅ |
+| SLEEP-08 | ❓ What the sleeping pet and the pet with the light on look like. | ❓ |
 | SLEEP-09 | **While the pet sleeps, the player can only use Lamp, Check and Clock.** Every other action (Drink, Food, Pet, Play, Educate, Bath, AC, Medical) is unavailable. (So Bath cannot be used while asleep, even if DIRTY.) | ✅ |
 | SLEEP-10 | **Temperature during sleep:** if the pet is **not** in TOO_HOT or TOO_COLD, the room temperature **resets to the comfort zone** while it sleeps. If it **is** in TOO_HOT / TOO_COLD, the temperature **stays at the same value for the whole night**. 🔶 Either way there is **no temperature drift overnight** (no ticks), and ticks resume at wake-up in the direction the AC was left. 🔶 Reset happens at **bedtime**, to a value inside the band (e.g. 25 °C). | ✅ rule / 🔶 timing, value |
 | SLEEP-11 | **Asleep, needs still decay, but attenuated by 4–8×** compared to the awake rate (🔶 default 6×, **tunable**). Adverse conditions' **consequences are applied only at the morning wake-up** (sickness rolls, happiness drops), like the DIRTY state (DIRT-08). This includes TOO_HOT / TOO_COLD. | ✅ range / 🔶 default |
@@ -205,20 +205,20 @@ Pet in TOO_COLD at 18 °C
 |----|------|--------|
 | ICE-01 | Ice Cream gives **no fullness** (it doesn't change hunger). | ✅ |
 | ICE-02 | It raises **happiness** and **weight**. | ✅ |
-| ICE-03 | Each Ice Cream has a **70% chance** of **+1 weight** (replaces the legacy 39%/60%). | ✅ |
+| ICE-03 | Ice Cream always adds weight (it is **hyper-caloric**), see §8.19. | ✅ |
 | ICE-04 | Ice Cream raises happiness by **1 level** (capped at Happy, HAP-04). It does not cure SAD in any special way (the blog's "happy immediately" was not adopted). | ✅ |
 | WEIGHT-01 | Being **too heavy**, **especially before adulthood**, raises the chance of getting **SICK** and can lead to **death**. | ✅ |
-| WEIGHT-02 | ❓ The weight scale (the legacy art only covered 1–3), the "too heavy" threshold, how weight is lost (Play? time? Medicine?), and the sickness/death chances. Younger stages are more vulnerable. | ❓ test |
+| WEIGHT-02 | Weight numbers are **placeholders** until the real toy is checked (round 16): the scale and the healthy range of each stage (§8.19). | ⏸ placeholders |
 
 ## 8.11 Conditions: what the player sees and hears
 
 | ID | Rule | Status |
 |----|------|--------|
-| COND-01 | **Every non-normal state has its own sprites**, so you can tell at a glance: **HUNGRY, THIRSTY, TOO_HOT, TOO_COLD, SICK, SAD**, and now **DIRTY** (the pet looks dark, §8.15). | ✅ |
-| COND-02 | While the pet is in any of these states it **beeps from time to time** (attention call). Beep interval **tunable**. | ✅ interval ❓ |
-| COND-03 | Each condition derives from a meter or event: HUNGRY / THIRSTY from low fullness, SAD from low happiness, SICK from the illness rolls, TOO_HOT / TOO_COLD from temperature (§8.8). Thresholds ❓. | 🔶 |
-| COND-04 | ❓ When **several** conditions apply at once, which sprite shows (a priority order, or alternating)? And does the call beep differ per condition? | ❓ |
-| COND-05 | ❓ Whether **sleeping** and **overweight** also have their own sprites and calls. (Poop does not exist: §8.15.) | ❓ |
+| COND-01 | The conditions the pet can be in: **HUNGRY, THIRSTY, TOO_HOT, TOO_COLD, SICK, SAD, DIRTY**. **Hungry and thirsty have no sprite of their own** (round 16): they are shown on the Check screen and make the pet beep. The others have their own sprites. | ✅ |
+| COND-02 | While the pet is in any condition it **beeps every 5 minutes**, with the **same tune for every condition** (round 16). A sleeping pet does not. | ✅ |
+| COND-03 | **Hungry, thirsty and sad mean the meter is completely empty** (round 16). The harm they cause (the death clocks) starts at the **next** check. SICK comes from the illness rolls, TOO_HOT / TOO_COLD from the temperature. | ✅ |
+| COND-04 | When several apply, the sprite shown has this priority: **SICK, TOO_HOT / TOO_COLD, SAD, DIRTY** (round 16). | ✅ |
+| COND-05 | A sleeping pet has its own sprite and **does not call**; an overweight pet has no sprite of its own (round 16, default). | ✅ |
 | COND-06 | **Escalating checks:** the dirty mechanism (a chance that starts at 20% and rises 10% with every 15-minute check) is the **template for every adverse condition** (entering TOO_HOT/COLD, falling SICK, the death checks, etc.), each with its own start chance, step and onset delay, all **tunable**. Only the dirty numbers (DIRT-09) are decided so far. | ✅ approach / ❓ numbers |
 
 ## 8.12 Reset (starting a new pet)
@@ -229,7 +229,7 @@ Pet in TOO_COLD at 18 °C
 | RESET-02 | There is **no automatic restart** after death, nor after the Angel/Demon final form: the dead blob / Angel / Demon stays on screen until reset. | ✅ (final forms inferred) |
 | RESET-03 | 🔶 Web equivalent: a small "pinhole" on the shell that needs a **long-press** and a **confirmation** ("This will delete your dino"). It must not be reachable by a stray tap. | 🔶 |
 | RESET-04 | 🔶 Reset discards everything about the pet (stats, seed, care score) and starts the egg sequence. If we keep several pet slots (Q-UI-3), reset applies to the selected slot. | 🔶 |
-| RESET-05 | ❓ After reset, does the real toy ask for the clock first (A1)? | ❓ |
+| RESET-05 | After a reset the app **asks for the wake-up time** first, as the toy asks for the clock (decided, round 15). | ✅ |
 
 ## 8.13 Care actions and the happiness / education meters
 
@@ -240,7 +240,7 @@ Decided in round 6. Happiness has **5 levels** (VerySad, Sad, Normal, Happy, Ver
 | HAP-01 | **Pet** raises happiness, but **can never top it up**. 🔶 Cap = one level below the maximum (**Happy**). | ✅ / 🔶 cap |
 | HAP-02 | **Only playing Jokenpo can top up happiness** to VeryHappy. | ✅ |
 | HAP-03 | Happiness from Play depends on **winning** (PLAY-04…07), not on merely playing. This **replaces** the earlier "playing always raises happiness". | ✅ |
-| HAP-04 | Ice Cream raises happiness (ICE-02). Since only Play tops it up, 🔶 Ice Cream is capped like Pet. Whether it also cures SAD immediately (blog) ❓. | 🔶 |
+| HAP-04 | Ice Cream raises happiness by **1 level**, capped like Pet (ICE-04). It does not cure SAD in any special way. | ✅ |
 | EDU-01 | 🔶 Education has **5 grades: E+, D+, C+, B+, A+**, starting at **E+**. Implied by "Pet should not raise education past C+" and by the blog; not stated outright. | 🔶 confirm |
 | EDU-02 | **Educate** (the Book) raises education, up to **A+**. **Only studying can reach B+ and A+.** | ✅ |
 | EDU-03 | **Pet** also raises education, but **never past C+**. | ✅ |
@@ -272,10 +272,10 @@ Decided in round 6. Happiness has **5 levels** (VerySad, Sad, Normal, Happy, Ver
 | ID | Rule | Status |
 |----|------|--------|
 | DIRT-01 | **There is no poop in the game.** (The legacy "cocozinhos" comment is dropped.) | ✅ |
-| DIRT-02 | The pet **gets dirty over time**. While **DIRTY** it looks **dark** (its own sprite set). 🔶 The dirt threshold is drawn per bath cycle between **16 and 20 hours** after the last bath (**tunable**); this keeps the need to **at least one bath a day**. | ✅ range / 🔶 draw |
+| DIRT-02 | The pet **gets dirty over time**. While **DIRTY** it looks **dark** (its own sprite set). The dirt threshold is drawn per bath cycle between **20 and 24 hours** after the last bath (**decided, round 15**; **tunable**). A bath in the hour before bed, every day, keeps the pet clean for most of the next day. | ✅ |
 | DIRT-03 | **Bath** gives the pet a **shower** (animation) and **clears the dirt fully**, **resetting the dirtiness timer**. | ✅ |
-| DIRT-06 | **Bath availability:** the player can bathe the pet **only when it is DIRTY, or within the hour before bedtime**. Otherwise the pet **refuses** (head shake) 🔶. Example: bedtime 20:30 → bathing is allowed from **19:30 to 20:29**. | ✅ rule / 🔶 refusal |
-| DIRT-07 | The pre-bed window uses the pet's **current-stage bedtime** (SLEEP-05/06), which changes as it grows. A bath in the window on a clean pet still counts and resets the timer, so one bath per day is enough. | 🔶 consequence |
+| DIRT-06 | **Bath availability:** the player can bathe the pet **only when it is DIRTY, within the hour before bedtime, or within the first hour after waking up** (the morning window was added in round 16). Otherwise the pet **refuses** (head shake) 🔶. Example: bedtime 20:30 → from 19:30 to 20:29; wake-up 07:00 → from 07:00 to 07:59. | ✅ rule / 🔶 refusal |
+| DIRT-07 | The pre-bed window uses the pet's **current-stage bedtime** (SLEEP-05/06), which changes as it grows; the morning window follows the wake-up time. A bath in a window on a clean pet still counts and resets the timer, so one bath a day is enough. With a 20–24 hour timer, a morning bath is dirty again around the next wake-up and a bedtime bath in the afternoon of the next day. | 🔶 consequence |
 | DIRT-08 | **Dirt accrues normally while the pet sleeps, but the DIRTY state never begins during sleep.** If the threshold would be crossed overnight, the pet **becomes DIRTY at the morning wake-up** (it is computed then). | ✅ |
 | DIRT-09 | **Dirty checks:** once the pet has been DIRTY for **about 2–3 hours** (🔶 onset drawn between 2 and 3 h; counted from when DIRTY begins, from wake-up if it began overnight, DIRT-08), a **check runs every 15 minutes**: the pet **becomes SICK** with a chance that starts at **20%** on the first check and **rises 10% with each following check** (30%, 40%, …, capped at 100%). When it becomes SICK, **the dirty checks stop**. | ✅ |
 | DIRT-10 | **On each dirty check, happiness also drops** (the drop is always applied; 🔶 −1 level per check, floored at VerySad; ❓ could instead be once at the onset). After the pet becomes SICK, **death checks begin** (DEATH-07/08). 🔶 If the pet is cured but still DIRTY, the dirty checks **resume** from 20%. | ✅ / 🔶 details |
@@ -289,9 +289,35 @@ Decided in round 6. Happiness has **5 levels** (VerySad, Sad, Normal, Happy, Ver
 | SND-01 | The real toy's sounds are **very simple piezo notes**: monophonic, square-wave beeps and short note sequences. | ✅ |
 | SND-02 | The web app **synthesizes every sound at runtime** (Web Audio oscillator, square wave, one note at a time). **There are no sound files**, so no sound assets or rights issues. | ✅ |
 | SND-03 | Each sound event (button press, attention beep, eat, drink, bath, medicine, refuse, hatch, growth, game win/loss, death, final form) is a small **data definition**: a list of notes (frequency, duration) and gaps, easy to tune. The exact melodies are ours to compose. | 🔶 |
-| SND-04 | Browsers require a **user gesture** before audio can play; the first tap unlocks it. A **mute** control is provided. 📖 The blog's way to toggle sound is to hold Left + Right for about 3 s; adopting it is **not yet decided** (PROP-04). | ✅ unlock / ⏸ chord |
+| SND-04 | Browsers require a **user gesture** before audio can play; the first tap unlocks it. There is a **mute switch** in the settings, and **holding Left + Right for about 3 seconds** also toggles sound, as on the toy (decided, round 15). | ✅ |
 
 
 ## 8.17 Scope for v1
 
 You agreed on a v1 of the *full care loop*: stat decay, sickness & medicine, dirtiness & bath, sleep & lamp, death, growth. **Stage logic is built in full; art arrives in waves.** Temperature (AC), Lamp/sleep, bath/dirtiness, per-condition sprites and beeps, Jokenpo and reset are in v1. The specific numbers inside each (decay rates, tick rates, death timers, sickness chances) are still open: see [07](07-open-questions.md) and [09](09-toy-verification-checklist.md).
+
+
+## 8.18 Device, pets and pacing (round 15)
+
+| ID | Rule | Status |
+|----|------|--------|
+| PET-01 | **One pet in v1**; the data model is ready for several. **Pets have no names.** If there are several later, each is identified by an image or an idle animation of its current age and species. | ✅ |
+| SHELL-01 | The device comes in **four colourways**, all original art: **white with red buttons**, **red with yellow buttons**, **teal with yellow buttons**, **yellow with red buttons**. Choosing one is cosmetic. | ✅ |
+| CLOCK-01 | The **Clock button shows only the time**, as on the toy. The **age** is on one of the Check (stat) screens. The first run uses the **device time** and asks only for the **wake-up time**. | ✅ |
+| INPUT-01 | **No keyboard controls** are needed: the five buttons are pressed by tap or click. (Buttons are still real, focusable controls with accessible names.) | ✅ |
+| PACING-01 | **Pacing** is a setting: **normal** (the AC wants a look about every 4 hours) or **relaxed** (about every 8 hours, the room drifting half as fast). Everything else is the same. `Settings.pacing`, `tuningForPacing`, `contextFor`. | ✅ |
+| SURVIVE-01 | A pet that has been cared for and is then **left alone should usually survive a day**, and be gone by two days (DEATH-06). Measured with a trip after three days of hourly care: 85% survive 24 hours on normal pacing and 94% on relaxed; after 48 hours all are dead. A newborn left alone from birth is gone in about a day (it hatches empty). | ✅ target, [15](15-pacing-report.md) |
+| UI-01 | **Layout is undecided.** Options are iterated when the UI is prepared (Q-UI-2). | ⏸ |
+
+
+## 8.19 Food, species and weight (round 16)
+
+| ID | Rule | Status |
+|----|------|--------|
+| FOODSP-01 | **After the species is known, a pet refuses food that does not suit it, even when hungry.** T-Rex: Hamburger, Chicken Thigh. Brontosaurus: Apple, Carrot. Triceratops ("pasta / everything"): accepts all, an assumption. **Ice Cream suits every species.** Before the species is decided (small blob, big blob), anything is accepted: the diet decides the species. | ✅ rule / 🔶 Triceratops, Ice Cream, early stages |
+| WEIGHT-03 | **Caloric** foods (Apple, Hamburger, Noodles) add weight **75%** of the time. **Ice Cream is hyper-caloric** and always does. **Non-caloric** foods (Carrot, Chicken Thigh) **do not add weight** to a healthy pet; to a pet **below its healthy range** they add weight. A pet close to overweight gains nothing from them. | ✅ |
+| WEIGHT-04 | **Winning a game burns weight 50% of the time** (round 16). 🔶 Never below the bottom of the healthy range. | ✅ / 🔶 floor |
+| WEIGHT-05 | **Weight burns off steadily over time**, slowly just above the healthy range and faster the more overweight the pet is. Healthy or lighter pets do not burn. | ✅ |
+| WEIGHT-06 | The healthy range and the "too heavy" limit depend on the stage; the numbers and the step (a quarter of a kg per gain) are **placeholders**. | ⏸ placeholders |
+| WEIGHT-07 | Being underweight has **no consequence** in v1 (🔶 default). | 🔶 |
+| BED-01 | The pet's **expected bedtime must be shown to the player** (round 16), for example on the clock screen. How is a UI decision. | ✅ requirement |

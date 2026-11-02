@@ -21,6 +21,8 @@ Frame 0 has no eye dots (a blink / eyes-closed frame). Frames 1–3 show two eye
 
 **No text in the art** (I18N-03, [14](14-localization.md)): sprites use only universal symbols, numbers, `°C`, `kg` and the grade letters A+ to E+, so the same art serves every language.
 
+**Four shell colourways** (SHELL-01), all original: white with red buttons, red with yellow buttons, teal with yellow buttons, yellow with red buttons. The shell is vector art, so a colourway is a palette, not four sets of bitmaps.
+
 ## 10.2 File format 🔶
 
 Plain-text bitmaps in the repo, one file per animation. `#` = dot on, `.` = dot off, one blank line between frames. A header line sets timing. Text diffs cleanly and needs no external tool.
@@ -69,8 +71,6 @@ A "full action set" for a form 🔶:
 | happy | 2 | petting, playing |
 | medicate | 2–3 | medicine |
 | refuse (negate) | 2 | healthy pet given medicine, or full pet offered food |
-| **hungry** | 2 | HUNGRY (COND-01) |
-| **thirsty** | 2 | THIRSTY |
 | **too hot** | 2 | TOO_HOT |
 | **too cold** | 2 | TOO_COLD |
 | **sick** | 2 | SICK |
@@ -78,11 +78,11 @@ A "full action set" for a form 🔶:
 | **dirty (dark)** | 2 | DIRTY (COND-01): the pet looks dark |
 | **shower** | 4 | Bath (DIRT-03): dark pet → shower strokes → clean |
 
-Every non-normal state has its own sprites (COND-01), so a full set is about **30 frames per form**. Plus shared props and scenes (food ×6, glass, syringe, lamp, air-conditioner / thermometer, status screens, rock-paper-scissors hands, evolution flash). There is no poop.
+Every non-normal state has its own sprites (COND-01), so a full set is about **26 frames per form** (hungry and thirsty have none, round 16). Plus shared props and scenes (food ×6, glass, syringe, lamp, air-conditioner / thermometer, status screens, rock-paper-scissors hands, evolution flash). There is no poop.
 
 **Death screen:** a **dead blob body with a cross and a halo (aureola)**, one per form size (LIFE-10). It can happen at any stage, so every form needs one (or a shared one scaled to the form).
 
-**Conditions:** HUNGRY, THIRSTY, TOO_HOT, TOO_COLD, SICK, SAD and DIRTY are seven separate animations; you can tell them apart at a glance. ❓ Whether sleeping-with-light-on and overweight need their own (COND-05).
+**Conditions:** TOO_HOT, TOO_COLD, SICK, SAD and DIRTY are five separate animations (**hungry and thirsty have no sprite**, COND-01); you can tell them apart at a glance. ❓ Whether sleeping-with-light-on and overweight need their own (COND-05).
 
 **Priority:** if several apply at once, one sprite shows. The order is not decided yet (COND-04), so every condition must be drawable on its own.
 

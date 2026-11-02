@@ -75,7 +75,7 @@ rakuraku-dinokun-web/
       controller.ts           glue: input -> action -> engine -> persist -> render
       scene.ts                state + UI mode -> list of sprite layers + segment states
       ui-state.ts             screens as a state machine (§13.8)
-      input.ts                buttons, keyboard, chords (hold Esc+Enter, etc.)
+      input.ts                the five buttons by tap or click, and the hold-Left+Right sound chord
       audio.ts                square-wave synth, note-list sounds
       storage.ts              IndexedDB, persist(), schema version
     i18n/
@@ -99,7 +99,7 @@ One serializable object per pet (plain JSON, versioned):
 
 | Group | Fields (from the rules) |
 |-------|--------------------------|
-| Identity | `id`, `name`, `seed`, `bornAt` (UTC ms) |
+| Identity | `id`, `seed`, `bornAt` (UTC ms). Pets have no names (PET-01) |
 | Progress | `stage` (egg…final), `wakeUps` (since hatching), `species`, `finalFormAtWakeUp` (drawn 16–20), `finalForm`, `dead` + `deadCause` |
 | Meters | `hunger` 0–8, `thirst` 0–8, `happiness` 0–4, `education` 0–4 (E+…A+), `weightKg` |
 | Environment | `roomTemp`, `acOn`, `lightOn`, `bumpArmed` (TEMP-14) |
@@ -108,7 +108,7 @@ One serializable object per pet (plain JSON, versioned):
 | Counters | species feeding counts (stages 1–2), `overplayCount`, `lossStreak`, `careScore` accumulators (stub) |
 | Time | `lastCheckIndex` (the last 15-min tick processed), `actionCounter` (random draws made by actions) |
 
-Global **Settings** are separate: wake-up time (15-min steps, 06:00–09:00), adult bedtime, Jokenpo rounds (3–5), sound on/off, language, and a debug **time offset**.
+Global **Settings** are separate: wake-up time (15-min steps, 06:00–09:00), latest bedtime (19:00–23:45), Jokenpo rounds (3–5), pacing (normal / relaxed), sound on/off, language, and a debug **time offset**.
 
 ### `advance(state, toTime)`
 
@@ -198,7 +198,7 @@ stateDiagram-v2
     Idle --> DeadOrFinal: pet died or final form
 ```
 
-Logical buttons (Left, Right, Enter, Esc, Clock) are the only input the controller sees. The **input layer** maps pointer taps on the SVG buttons and the keyboard to them, and recognizes the chords (hold Esc+Enter, hold Left+Right) if we adopt them (PROP-03/04). The **scene builder** turns `(state, UI mode)` into: the sprite layers to draw on the 19 × 16 grid, which of the ten segments are lit, and any sound to play. Rendering is therefore a pure function and easy to test with snapshots.
+Logical buttons (Left, Right, Enter, Esc, Clock) are the only input the controller sees. The **input layer** maps pointer taps on the SVG buttons to them (no keyboard controls, INPUT-01) and recognizes the one chord that was adopted, hold Left+Right to toggle sound (SND-04). The **scene builder** turns `(state, UI mode)` into: the sprite layers to draw on the 19 × 16 grid, which of the ten segments are lit, and any sound to play. Rendering is therefore a pure function and easy to test with snapshots.
 
 ## 13.9 Persistence, PWA and the browser's limits
 
@@ -242,9 +242,9 @@ CI runs type-check, lint, unit tests, the simulator's invariants, and the e2e sm
 | A5 | Source license for the new code | ✅ MIT (`LICENSE`, © 2026 Leonardo Pereira) |
 | A6 | Initialise a **git repository** in `rakuraku-dinokun-web` now | ✅ done (no commits yet) |
 | A7 | **Hosting** | ✅ **GitHub Pages** (see §13.15) |
-| A8 | Multiple pets (4 slots) vs. a single pet like the real toy (Q-UI-3). The data model supports N either way | ⏳ not answered; proceeding with my recommendation: single pet for v1, model ready for N |
+| A8 | Multiple pets (4 slots) vs. a single pet like the real toy | ✅ **one pet in v1**, the data model ready for several; pets have no names, and several would be told apart by an image or idle animation (PET-01) |
 | A10 | **Localization approach** (round 13): a tiny typed module plus `Intl`, no library; pt-BR source of truth; en alongside; es-419 later ([14](14-localization.md)) | ⏳ proposed |
-| A9 | Phone pacing (Q-BLOG-2): keep `timeScale` at 1 for now | ⏳ not answered; proceeding with `timeScale = 1` |
+| A9 | Phone pacing | ✅ **a setting**: normal (the AC wants a look about every 4 hours) or relaxed (about every 8): `Settings.pacing` (PACING-01, [15](15-pacing-report.md)) |
 
 ## 13.13 Milestones
 
@@ -254,7 +254,7 @@ CI runs type-check, lint, unit tests, the simulator's invariants, and the e2e sm
 | M1 | **Core engine, part 1**: time grid, counter-based RNG, state, needs decay, sleep/wake, growth, final form | ✅ done: 67 tests, including the lifecycle timeline and jump = steps. Rules covered: TIME-01/02/04/05/06, LIFE-01…05/07, SLEEP-01/05/06/07/11 (attenuation), NEED-01, PACE-01 (decay rates are provisional until M3), CARE-01 (stub) |
 | M2 | **Core engine, part 2**: temperature/AC, dirt, sickness, death, species, weight, all actions | ✅ done in four commits (actions and species; health; temperature and AC; Jokenpo, weight and conditions): 219 tests and a mutation check of every rule group. Not yet done: the care score (CARE-02 is deferred), pet name/seed generation, migrations, and the pacing numbers, which M3 tunes |
 | M3 | **Simulator and tuning**: headless runs, pacing and death targets | ✅ done: `npm run sim` ([15](15-pacing-report.md)), 250 tests incl. the PACE-01 and DEATH-05/06 targets. Needs rates tuned; three findings need your decision (temperature pacing, bath rhythm, one missed day) |
-| M4 | **UI shell**: SVG shell, LCD canvas, buttons, keyboard, scene builder, audio synth, placeholder art, **the i18n module with the pt-BR and en catalogs** ([14](14-localization.md)) | Playable end to end with text placeholders |
+| M4 | **UI shell**: SVG shell, LCD canvas, buttons, scene builder, audio synth, placeholder art, **the i18n module with the pt-BR and en catalogs** ([14](14-localization.md)) | Playable end to end with text placeholders |
 | M5 | **Persistence and PWA**: IndexedDB, migrations, catch-up summary, service worker, install prompt | Close the app for a day, reopen: pet advanced correctly; works offline |
 | M6 | **Debug panel and config overrides** | You can jump days and force states while play-testing |
 | M7 | **Sprite pipeline and editor**; integrate wave 1 art | Your small-blob frames render; fallback works |
