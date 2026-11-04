@@ -88,10 +88,10 @@ absent   0.0         0%     100%  1.0 / 1.0 / 1.2          100%     100%   100% 
 unfed    3.5         0%     100%  1.1 / 1.1 / 1.2          100%     100%   100%    100%     55%  0%     1%   1%    0%
 evening  1.0         9%     91%   2.2 / 8.3 / 16.8         43%      37%    25%     25%      25%  14%    8%   9%    6%
 morning  0.9         13%    87%   2.2 / 8.3 / 16.8         34%      31%    16%     16%      19%  3%     11%  7%    2%
-twice    2.0         26%    74%   4.2 / 12.2 / 18.8        28%      26%    9%      9%       19%  0%     8%   8%    2%
-thrice   3.0         90%    10%   22.8 / 26.8 / 28.8       5%       4%     0%      0%       4%   0%     2%   2%    0%
-every4h  3.7         99%    1%    26.8 / 27.8 / 28.8       5%       1%     1%      1%       0%   3%     1%   1%    0%
-every8h  2.0         91%    9%    20.8 / 24.8 / 26.8       10%      6%     1%      1%       5%   3%     3%   3%    1%
+twice    2.0         21%    79%   4.2 / 12.2 / 19.2        29%      26%    10%     10%      19%  0%     8%   8%    2%
+thrice   3.0         88%    12%   24.8 / 28.8 / 29.8       6%       4%     0%      0%       4%   0%     2%   2%    0%
+every4h  3.7         99%    1%    27.8 / 28.8 / 28.8       5%       1%     1%      1%       0%   3%     1%   1%    0%
+every8h  2.0         91%    9%    23.8 / 26.8 / 27.8       10%      6%     1%      1%       5%   3%     3%   3%    1%
 ```
 
 ### The whole game, relaxed pacing (the AC about every 8 hours)
@@ -134,7 +134,7 @@ A bath in the first hour after waking restarts a 20 to 24 hour timer that runs o
 
 ### F3. Two visits a day cover the needs but not the AC
 
-Twice a day keeps 100% alive in a still room, but 26% on normal pacing and 59% on relaxed once the AC is in play. Three visits keep 90% (normal) to 98% (relaxed): they used to keep 95% and 99%, but a well cared for pet now lives up to 30 days instead of 20, so it spends more time in the room's reach (F6).
+Twice a day keeps 100% alive in a still room, but 21% on normal pacing and 59% on relaxed once the AC is in play. Three visits keep 88% (normal) to 98% (relaxed): they used to keep 95% and 99%, but a well cared for pet now lives up to 30 days instead of 20, so it spends more time in the room's reach (F6).
 
 ### F4. Newborns are fragile by design
 
@@ -146,7 +146,7 @@ With whole-kilo gains the diligent players' pets were too heavy (0.4 sicknesses 
 
 ### F6. A good life is now longer (round 18)
 
-The care score ([16](16-care-score-proposal.md)) now lengthens good lives: a pet reaching its drawn final-form day (16 to 20) lives on, once, by its care quality of the way up to day 30. The simulator shows it: a visit every 4 hours reaches the final form on day 28 or 29 (median 27.8 days), three visits on day 27 (26.8), every 8 hours on day 25, twice a day on day 12 (most of those pets die before it). Because the lives are longer, the share that reach the final form falls a little for the middle players (three visits 95% to 90%, every 8 hours 95% to 91%) while the reward is ten more days. The Angel share is on the care page; the Angel limit grows with the life (1.7 points per day once above 32).
+The care score ([16](16-care-score-proposal.md)) now lengthens good lives: a pet reaching its drawn final-form day (16 to 20) lives on, once, by its care quality of the way up to day 30. The simulator shows it: a visit every 4 hours reaches the final form on day 29 (median 28.8 days), three visits on day 29 (28.8), every 8 hours on day 27 (26.8), twice a day on day 12 (most of those pets die before it). Because the lives are longer, the share that reach the final form falls a little for the middle players (three visits 95% to 88%, every 8 hours 95% to 91%) while the reward is ten more days. The Angel share is on the care page; the Angel limit grows with the life (1.72 points per day once above 32).
 
 ## 15.5 Targets enforced by tests
 
