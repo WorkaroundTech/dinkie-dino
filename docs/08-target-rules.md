@@ -117,10 +117,13 @@ A **hidden** number that records how well the pet was looked after. It is never 
 | ID | Rule | Status |
 |----|------|--------|
 | CARE-01 | A hidden care score exists and picks Angel vs Demon. | ✅ |
-| CARE-02 | Factors, weights, grace periods and the Angel/Demon threshold: **a draft is in [16](16-care-score-proposal.md)** (care mistakes per episode, Angel at 32 points or fewer), waiting for your corrections. | 🔶 draft |
-| CARE-03 | Time-in-bad-state accumulates during catch-up (TIME-01), so a long absence naturally affects the score. | ✅ consequence |
-| CARE-04 | The score stops accumulating at the final form. | ✅ |
-| CARE-05 | The care score does **not** influence death, growth timing or species. | 🔶 |
+| CARE-02 | The factors, graces, weights and the Angel threshold (32 points) are **implemented as the draft in [16](16-care-score-proposal.md)** and tunable in `careScore`; the owner has not yet commented on the draft itself (question 57). | 🔶 draft in use |
+| CARE-03 | **A care mistake is one episode of a bad condition that outlasts its grace**, counted once and costing points: sick 3, too hot / too cold 2, dirty 2, light left on 2, hungry / thirsty / sad 1. Graces are in awake time (the light in sleeping time); an episode keeps its count through the night. Because it is measured in checks, a long absence (catch-up, TIME-01) is scored too. | ✅ / 🔶 numbers |
+| CARE-04 | **Angel at 32 points or fewer, Demon above**, judged at the final form; the score stops at the final form. The limit **grows with the life** (round 18): 1.7 points per wake-up once that is more than 32 (51 at day 30). | ✅ / 🔶 numbers |
+| CARE-05 | **Time spent SuperHappy takes points back** (round 18): each episode of one awake hour gives 1 point, up to 8 in a life. The score never goes below 0. | ✅ |
+| CARE-06 | **Good care lowers the risks a little** (round 18): the chance of waking up sick, of getting sick on entering a too hot / too cold state, and of dying at once on entering it are each up to **10% lower**. The reduction is the pet's *quality*, 1 with no points falling in a straight line to 0 at the Angel limit. | ✅ |
+| CARE-07 | **Good care lives longer** (round 18): when the pet reaches its drawn final-form wake-up (16 to 20), it lives on, once, by its quality of the way up to **wake-up 30**; a perfect pet transforms on day 30, a neglected one on its drawn day. The Angel or Demon verdict is then judged on the whole life. | ✅ |
+| CARE-08 | It is **one score**: the same points decide Angel or Demon and what good care buys (CARE-06, CARE-07). The player never sees it. | ✅ |
 
 ## 8.7 LCD and art grid
 
@@ -316,7 +319,7 @@ You agreed on a v1 of the *full care loop*: stat decay, sickness & medicine, dir
 | ID | Rule | Status |
 |----|------|--------|
 | FOODSP-01 | **After the species is known, a pet refuses food that does not suit it, even when hungry.** T-Rex: Hamburger, Chicken Thigh. Brontosaurus: Apple, Carrot. Triceratops ("pasta / everything"): accepts all, an assumption. **Ice Cream suits every species.** Before the species is decided (small blob, big blob), anything is accepted: the diet decides the species. | ✅ rule / 🔶 Triceratops, Ice Cream, early stages |
-| WEIGHT-03 | **Caloric** foods (Apple, Hamburger, Noodles) add weight **75%** of the time. **Ice Cream is hyper-caloric** and always does. **Non-caloric** foods (Carrot, Chicken Thigh) **do not add weight** to a healthy pet; to a pet **below its healthy range** they add weight. A pet close to overweight gains nothing from them. | ✅ |
+| WEIGHT-03 | **Caloric** foods (Apple, Hamburger) add weight **75%** of the time; **Noodles, the middle term, 40%** (round 18). **Ice Cream is hyper-caloric** and always does. **Non-caloric** foods (Carrot, Chicken Thigh) **do not add weight** to a healthy pet; to a pet **below its healthy range** they add weight. A pet close to overweight gains nothing from them. | ✅ |
 | WEIGHT-04 | **Winning a game burns weight 50% of the time** (round 16). 🔶 Never below the bottom of the healthy range. | ✅ / 🔶 floor |
 | WEIGHT-05 | **Weight burns off steadily over time**, slowly just above the healthy range and faster the more overweight the pet is. Healthy or lighter pets do not burn. | ✅ |
 | WEIGHT-06 | The healthy range and the "too heavy" limit depend on the stage; the numbers and the step (a quarter of a kg per gain) are **placeholders**. | ⏸ placeholders |

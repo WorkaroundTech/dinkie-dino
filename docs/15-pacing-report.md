@@ -1,6 +1,6 @@
 # 15. Pacing report (M3)
 
-The headless simulator plays thousands of seeded lives with scripted players and measures what the rules actually demand. This document records how to run it, what is tuned and why, the current results, and what they mean. All numbers are reproducible: the seeds are fixed (`--seed 1`), so the same command prints the same table. Last updated with your answers of round 16.
+The headless simulator plays thousands of seeded lives with scripted players and measures what the rules actually demand. This document records how to run it, what is tuned and why, the current results, and what they mean. All numbers are reproducible: the seeds are fixed (`--seed 1`), so the same command prints the same table. Last updated with round 18 (the care score now lengthens good lives, so the runs go up to 40 days).
 
 ## 15.1 Running it
 
@@ -42,7 +42,7 @@ Nobody in the real game is this regular. The point is to measure the **attention
 - **final / died:** share of lives that reached the final form, or died before it.
 - **trouble:** share of awake time the pet is in any condition (empty hunger or thirst, empty happiness, dirty, sick, too hot or cold). **needs:** only hungry, thirsty or sad. **hot / cold:** the pet is suffering from the room.
 - **life p10 / median / p90:** days lived.
-- The report also prints sicknesses per life by cause, a **shadow of the proposed care score** ([16](16-care-score-proposal.md)) and the lifespan histogram.
+- The report also prints sicknesses per life by cause, the **care score** ([16](16-care-score-proposal.md)) and the lifespan histogram.
 
 ## 15.2 What was tuned
 
@@ -69,29 +69,29 @@ The pacing is a setting: **normal** or **relaxed** (`Settings.pacing`, `contextF
 ```text
 player   visits/day  final  died  life p10/med/p90 (days)  trouble  needs  hungry  thirsty  sad  dirty  hot  cold  sick
 -------  ----------  -----  ----  -----------------------  -------  -----  ------  -------  ---  -----  ---  ----  ----
-absent   0.0         0%     100%  1.0 / 1.1 / 1.2          100%     100%   100%    100%     49%  26%    0%   0%    32%
+absent   0.0         0%     100%  1.0 / 1.1 / 1.2          100%     100%   100%    100%     49%  27%    0%   0%    30%
 unfed    3.5         0%     100%  1.1 / 1.1 / 1.2          100%     100%   100%    100%     54%  0%     0%   0%    0%
-evening  1.0         73%    28%   6.9 / 16.8 / 19.8        34%      30%    25%     25%      19%  15%    0%   0%    5%
-morning  1.0         100%   0%    15.8 / 17.8 / 19.8       18%      18%    13%     13%      12%  3%     0%   0%    0%
-twice    2.0         100%   0%    15.8 / 17.8 / 19.8       17%      17%    10%     10%      11%  0%     0%   0%    0%
-thrice   3.0         100%   0%    15.8 / 17.8 / 19.8       1%       1%     0%      0%       1%   0%     0%   0%    0%
+evening  1.0         73%    27%   6.9 / 16.8 / 19.8        34%      30%    25%     25%      19%  15%    0%   0%    4%
+morning  1.0         100%   0%    17.8 / 18.8 / 19.8       19%      19%    13%     13%      13%  3%     0%   0%    0%
+twice    2.0         100%   0%    20.8 / 21.8 / 22.8       19%      19%    12%     12%      12%  0%     0%   0%    0%
+thrice   3.0         100%   0%    29.8 / 29.8 / 29.8       2%       2%     0%      0%       2%   0%     0%   0%    0%
 ```
 
-**PACE-01 holds in the form that fits your rules.** A full meter empties in about 12 awake hours. Twice a day keeps every pet alive (100% grow up) with a need empty 17% of the time (hungry 10%, thirsty 10%, sad 11%, mostly the adult's long evening), three visits leave 1%. The **morning visit** with its bath window keeps every dirt problem away (`dirty` 3%, no sicknesses from dirt) and also grows every pet up in a still room; the **evening-only** visitor loses 28%. A newborn left alone is gone in **1.1 days**: it hatches empty, and the thirst clock starts at once.
+**PACE-01 holds in the form that fits your rules.** A full meter empties in about 12 awake hours. Twice a day keeps every pet alive (100% grow up) with a need empty 19% of the time (hungry 12%, thirsty 12%, sad 12%, mostly the adult's long evening), three visits leave 2%. The **morning visit** with its bath window keeps every dirt problem away (`dirty` 3%, no sicknesses from dirt) and also grows every pet up in a still room; the **evening-only** visitor loses 27%. A newborn left alone is gone in **1.1 days**: it hatches empty, and the thirst clock starts at once.
 
 ### The whole game, normal pacing (the AC about every 4 hours)
 
 ```text
 player   visits/day  final  died  life p10/med/p90 (days)  trouble  needs  hungry  thirsty  sad  dirty  hot  cold  sick
 -------  ----------  -----  ----  -----------------------  -------  -----  ------  -------  ---  -----  ---  ----  ----
-absent   0.0         0%     100%  1.0 / 1.0 / 1.2          100%     100%   100%    100%     49%  23%    13%  0%    30%
-unfed    3.5         0%     100%  1.0 / 1.1 / 1.2          100%     100%   100%    100%     55%  0%     1%   1%    0%
-evening  1.0         10%    91%   2.1 / 9.1 / 16.8         43%      37%    25%     25%      25%  14%    8%   9%    6%
-morning  0.9         14%    86%   2.2 / 8.8 / 16.8         33%      31%    16%     16%      19%  3%     11%  6%    3%
-twice    2.0         28%    72%   4.2 / 12.3 / 18.3        28%      26%    9%      9%       19%  0%     7%   8%    2%
-thrice   3.0         95%    5%    15.8 / 17.8 / 19.8       5%       3%     0%      0%       3%   0%     2%   2%    0%
-every4h  3.5         99%    1%    15.8 / 17.8 / 19.8       5%       2%     1%      1%       0%   3%     1%   1%    0%
-every8h  2.0         95%    5%    15.8 / 17.8 / 19.8       11%      6%     2%      2%       5%   3%     3%   3%    1%
+absent   0.0         0%     100%  1.0 / 1.0 / 1.2          100%     100%   100%    100%     50%  24%    13%  0%    28%
+unfed    3.5         0%     100%  1.1 / 1.1 / 1.2          100%     100%   100%    100%     55%  0%     1%   1%    0%
+evening  1.0         9%     91%   2.2 / 8.3 / 16.8         43%      37%    25%     25%      25%  14%    8%   9%    6%
+morning  0.9         13%    87%   2.2 / 8.3 / 16.8         34%      31%    16%     16%      19%  3%     11%  7%    2%
+twice    2.0         26%    74%   4.2 / 12.2 / 18.8        28%      26%    9%      9%       19%  0%     8%   8%    2%
+thrice   3.0         90%    10%   22.8 / 26.8 / 28.8       5%       4%     0%      0%       4%   0%     2%   2%    0%
+every4h  3.7         99%    1%    26.8 / 27.8 / 28.8       5%       1%     1%      1%       0%   3%     1%   1%    0%
+every8h  2.0         91%    9%    20.8 / 24.8 / 26.8       10%      6%     1%      1%       5%   3%     3%   3%    1%
 ```
 
 ### The whole game, relaxed pacing (the AC about every 8 hours)
@@ -99,35 +99,34 @@ every8h  2.0         95%    5%    15.8 / 17.8 / 19.8       11%      6%     2%   
 ```text
 player   visits/day  final  died  life p10/med/p90 (days)  trouble  needs  hungry  thirsty  sad  dirty  hot  cold  sick
 -------  ----------  -----  ----  -----------------------  -------  -----  ------  -------  ---  -----  ---  ----  ----
-absent   0.0         0%     100%  1.0 / 1.1 / 1.2          100%     100%   100%    100%     49%  25%    4%   0%    31%
-evening  1.0         40%    61%   4.0 / 14.3 / 18.8        37%      32%    25%     25%      21%  15%    3%   3%    5%
-morning  1.0         51%    49%   5.2 / 15.8 / 18.8        23%      22%    14%     14%      15%  3%     5%   3%    1%
-twice    2.0         67%    33%   9.2 / 16.8 / 19.4        20%      20%    9%      9%       14%  0%     3%   3%    1%
-thrice   3.0         99%    1%    15.8 / 17.8 / 19.8       2%       2%     0%      0%       1%   0%     1%   0%    0%
-every4h  3.5         100%   0%    15.8 / 17.8 / 19.8       4%       2%     1%      1%       0%   3%     0%   0%    0%
-every8h  2.0         98%    2%    15.8 / 17.8 / 19.8       8%       4%     2%      2%       3%   3%     1%   1%    0%
+evening  1.0         39%    61%   4.1 / 14.2 / 18.8        37%      32%    25%     25%      21%  15%    4%   3%    5%
+morning  1.0         52%    48%   5.3 / 16.8 / 18.8        23%      22%    13%     13%      15%  3%     5%   3%    1%
+twice    2.0         59%    41%   8.3 / 18.8 / 20.8        21%      20%    10%     10%      14%  0%     3%   3%    1%
+thrice   3.0         98%    2%    27.8 / 28.8 / 29.8       3%       2%     0%      0%       2%   0%     1%   1%    0%
+every4h  3.7         100%   0%    28.8 / 28.8 / 28.8       4%       1%     1%      1%       0%   3%     0%   0%    0%
+every8h  2.0         99%    1%    25.8 / 27.8 / 28.8       7%       3%     1%      1%       3%   3%     1%   1%    0%
 ```
 
 ### Time spent suffering from the room (too hot or too cold, share of awake time)
 
 | Visitor | normal | relaxed |
 |---------|--------|---------|
-| every 4 hours | 1.1% | 0.3% |
-| every 8 hours | 5.3% | 1.8% |
-| twice a day | 15.4% | 5.7% |
+| every 4 hours | 1.1% | 0.2% |
+| every 8 hours | 5.5% | 1.8% |
+| twice a day | 15.8% | 6.1% |
 
 ### A trip: three days of hourly care, then nobody comes
 
 | Pacing | Dead within 1 day alone | Dead within 2 days alone |
 |--------|-------------------------|--------------------------|
 | normal | **15%** (heat and cold 14%, sickness 2%) | 100% (83% sickness) |
-| relaxed | **6%** | 100% (94% sickness) |
+| relaxed | **4%** | 100% (95% sickness) |
 
 ## 15.4 Findings
 
 ### F1. "Attention" and "death" fit together once attention means trouble
 
-A visitor every 4 hours finds the pet suffering 1% of the time, one every 8 hours 5% (five times as often), and twice a day 15%. Death needs 6 to 8 hours of that, so a cared-for pet left alone survives a day 85% of the time (94% relaxed) and not two.
+A visitor every 4 hours finds the pet suffering 1% of the time, one every 8 hours 5.5% (five times as often), and twice a day 16%. Death needs 6 to 8 hours of that, so a cared-for pet left alone survives a day 85% of the time (96% relaxed) and not two.
 
 ### F2. The bath windows fit the 20 to 24 hour timer
 
@@ -135,7 +134,7 @@ A bath in the first hour after waking restarts a 20 to 24 hour timer that runs o
 
 ### F3. Two visits a day cover the needs but not the AC
 
-Twice a day keeps 100% alive in a still room, but 28% on normal pacing and 67% on relaxed once the AC is in play. Three visits keep 95% (normal) to 99% (relaxed).
+Twice a day keeps 100% alive in a still room, but 26% on normal pacing and 59% on relaxed once the AC is in play. Three visits keep 90% (normal) to 98% (relaxed): they used to keep 95% and 99%, but a well cared for pet now lives up to 30 days instead of 20, so it spends more time in the room's reach (F6).
 
 ### F4. Newborns are fragile by design
 
@@ -144,6 +143,10 @@ A pet hatches with empty hunger and thirst and the light on. Left alone from bir
 ### F5. Weight needed finer steps
 
 With whole-kilo gains the diligent players' pets were too heavy (0.4 sicknesses per life); with quarter-kilo steps weight causes none. The weight numbers are placeholders either way.
+
+### F6. A good life is now longer (round 18)
+
+The care score ([16](16-care-score-proposal.md)) now lengthens good lives: a pet reaching its drawn final-form day (16 to 20) lives on, once, by its care quality of the way up to day 30. The simulator shows it: a visit every 4 hours reaches the final form on day 28 or 29 (median 27.8 days), three visits on day 27 (26.8), every 8 hours on day 25, twice a day on day 12 (most of those pets die before it). Because the lives are longer, the share that reach the final form falls a little for the middle players (three visits 95% to 90%, every 8 hours 95% to 91%) while the reward is ten more days. The Angel share is on the care page; the Angel limit grows with the life (1.7 points per day once above 32).
 
 ## 15.5 Targets enforced by tests
 
@@ -156,6 +159,6 @@ With whole-kilo gains the diligent players' pets were too heavy (0.4 sicknesses 
 | Trips | a cared-for pet left alone for a day is dead at most 20% of the time on both pacings, and for two days at least 90% |
 | DEATH-05, 06 | a newborn nobody looks at, or fed nothing, dies within about two days, before the species decision |
 | DIRT-02 | a morning visit in the bath window keeps dirt away (at most 0.1 dirt sicknesses per life, 95% grow up); an evening bath each day keeps at least 60% alive |
-| LIFE-07, SPEC-02 | the final form on wake-up 16 to 20; a diet of only meat, plants or noodles gives the matching species in at least 95% |
+| LIFE-07, CARE-07, SPEC-02 | the final form on wake-up 16 to 30, and exactly 30 for a perfect (hourly) player; a diet of only meat, plants or noodles gives the matching species in at least 95% |
 
 If you change the tuning on purpose, these tests will tell you which of your own targets moved.

@@ -88,25 +88,15 @@ The decisions made so far are in the log below; decided rules live in [08](08-ta
 | 16 | 51–53 | A lit room at night stays at **60%**; Angel and Demon stay **locked until reset** in v1; the Check screen shows weight in kg and age as a number. |
 | 16 | 54–56 | The new survival numbers are **enough**. A **bath window in the first hour after waking** is added. Shell colour and pacing can be changed at any time. → DIRT-06, SURVIVE-01 |
 | 17 | 65–76 | **The toy manual** ([17](17-manual-review.md)): the left-hand action stays a gentle **Pet** (the toy's Discipline is not copied); the **AC works while the pet sleeps**; happiness has **six levels**, **SuperHappy** reached only by a won game while well fed, watered, educated and healthy; the glossary uses **pt-BR** terms; Jokenpo **default 5 rounds**; the sound chord stays; our bath windows stay; weight ranges by age later; **one icon blinks slowly** for the main problem (order proposed); the branch happens at the tail. → SLEEP-09, HAP-05, PLAY-01, ATTN-01/02, SPEC-08 |
+| 18 | 58–64, 77–83 | **Weight:** Apple and Hamburger caloric (75%), **Noodles the middle term (40%)**, Carrot and Chicken Thigh non-caloric; Triceratops accepts all foods. Questions 59 to 64 (any food before the species, Ice Cream for all, hungry / thirsty look and beep, light on at hatching, a newborn alone is gone in a day, bedtime on the clock screen and in settings) and 77, 78 (SuperHappy as read, blinking order with Pet for SAD) **accepted**. **The care score is now real and one score** ([16](16-care-score-proposal.md)): time spent SuperHappy earns points back (1 per hour, up to 8); good care makes sickness and sudden death up to **10% less likely** and lets the pet **live on up to wake-up 30** before it turns Angel or Demon; the **Angel limit grows with the life** (1.7 points per day, 51 at day 30). → CARE-04…08 |
 
 ---
 
 # Open questions
 
-Numbered so you can answer by number. The bracketed text is my proposed default. Questions 1 to 56 and 65 to 76 are answered (see the decisions log); 57 to 64, 77 and 78 are open.
+Numbered so you can answer by number. The bracketed text is my proposed default. Questions 1 to 56 and 58 to 83 are answered (see the decisions log); only 57 is open.
 
-57. **Care score draft** ([16](16-care-score-proposal.md)): the list of mistakes (sick, too hot, too cold, dirty, light left on, hungry, thirsty, sad), their weights (1 to 3 points), their graces (15 minutes to 2 hours) and the threshold (**Angel at 32 points or fewer**, about 1.7 a day). Accept, or what should change? [Accept as drafted, then tune]
-58. **Triceratops foods:** you said every species has one caloric and one non-caloric food. Triceratops has Noodles (caloric); which is its non-caloric one? I assumed it, being "pasta / everything", **accepts all foods**. [Accepts all]
-59. **Before the species is known** (small and big blob, and the first days of the tail stage) the pet accepts any food, since the diet decides the species. Correct? [Yes]
-60. **Ice Cream** suits every species (a treat)? [Yes]
-61. **What does a hungry or thirsty pet look like,** with no sprite of its own? I assumed the normal idle animation, a beep every 5 minutes, and the Check screen showing the empty bowls or glasses. [Yes]
-62. **Light on at hatching:** a pet that hatches in the evening goes to sleep with the light on and wakes up sick 60% of the time unless the player switches it off. Intended, as a first lesson? [Yes]
-63. **A newborn nobody looks at is gone in about a day** (it hatches with empty hunger and thirst). Acceptable? [Yes]
-64. **Showing the expected bedtime** (BED-01): where? [On the clock screen, "sleeps at 19:00", and in the settings next to the latest-bedtime setting]
-
-77. **SuperHappy** ([17](17-manual-review.md) §17.3): is my reading right? Hunger and thirst above 3 icons (7 of 8), education B+ or better, and also no sickness, dirt, or heat / cold. Does SuperHappy do anything besides its sixth face (a care-score point, a slower decay)? [No extra effect]
-78. **The blinking icon order** (ATTN-02): sick, too cold / hot, dirty, thirsty, hungry, sad; asleep only the lamp, then the AC. Is Pet the right fix to blink for SAD (or Play)? [Accept]
-
+57. **Care score draft** ([16](16-care-score-proposal.md)): the list of mistakes (sick, too hot, too cold, dirty, light left on, hungry, thirsty, sad), their weights (1 to 3 points), their graces (15 minutes to 2 hours) and the threshold (**Angel at 32 points or fewer**). It is implemented as drafted; accept, or what should change? [Accept as drafted, then tune]
 ## Tuning backlog (not questions)
 
 Numbers adjusted by play-testing and the simulator, all kept in `src/core/config/tuning.ts` and reachable from the debug panel. **Needs / pace:** decay rates (a full meter empties in about 12 awake hours), the night attenuation, the room drift (normal 4 hours, relaxed 8), dirt timer 20 to 24 h and onset 2 to 3 h, bedtimes per stage. **Chances:** sickness at wake-up (2% / 60%), suffering entry (3% + 3% per degree), dirty checks (start 20%), death checks (start 10%), loss-streak happiness drop (50%), over-play drop. **Deaths:** the onset range per cause (DEATH-07). **Weight:** every number, until the toy is checked (healthy ranges per stage, 0.25 kg steps, 75% / 100% gain chances, 50% win burn, burn over time). Run `npm run sim` ([15](15-pacing-report.md)) after changing any of them.

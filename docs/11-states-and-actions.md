@@ -29,7 +29,7 @@ Status: ✅ decided · 🔶 proposed/inferred · ❓ unknown · 💤 legacy only
 | **Hunger / fullness** | meter **0–8** (4 bowls × ½) ✅ | legacy, toy | Meals raise it; time lowers it (a full meter empties in about 12 awake hours); **HUNGRY only when empty**, harm from the next check; **no sprite**, a beep and the Check screen; empty 2 days+ → death checks ✅ | — | |
 | **Thirst** | meter **0–8** (4 glasses × ½) ✅ | legacy, toy | Drinks raise it; **THIRSTY only when empty**, **no sprite**; empty 1 day+ → death checks ✅ | — | |
 | **Happiness / mood** | 6 levels | legacy, toy | **6 levels** (VerySad … VeryHappy, **SuperHappy**). Pet and Ice Cream raise it (up to Happy); Play raises it and is the only way to VeryHappy ✅; SuperHappy only by a won game while well fed, watered, educated (B+) and healthy (HAP-05) ✅; "sad" is a state | Decay, amounts (Q-HAP-1) | |
-| **Weight** | kg (placeholders) | toy | Caloric foods (75%) and Ice Cream (always) add weight; Carrot and Chicken only to a pet below its healthy range; a won game burns it 50%; it burns off over time, faster when heavier; too heavy → SICK / death ✅ | Real numbers from the toy | |
+| **Weight** | kg (placeholders) | toy | Caloric foods (Apple, Hamburger: 75%), Noodles (40%) and Ice Cream (always) add weight; Carrot and Chicken only to a pet below its healthy range; a won game burns it 50%; it burns off over time, faster when heavier; too heavy → SICK / death ✅ | Real numbers from the toy | |
 | **Education** | 5 grades E+…A+ 🔶 | toy, blog | Educate raises it to A+; Pet only to C+; too much Play may lower it ✅ | Confirm scale, amounts (Q-EDU-1) | |
 | **DIRTY** | state | toy ✅ | Dirt builds up 16–20 h after the last bath; DIRTY never starts during sleep (computed at wake-up); after 2–3 h dirty, a check every 15 min with 20% (+10% each) chance of the negative effects ✅; left too long → death ✅. **No poop** ✅ | What a fired check does; death timer (Q-DIRT-4) | |
 | **SICK** | state | legacy, toy | Cured by Medicine; left sick → death ✅; **while sick the pet refuses eat, drink, play, study, bath and pet** ✅; high chance at wake-up if the light was on ✅; fired dirty checks can cause it 🔶 | Other triggers, signs (Q-SICK-1, Q-SICK-2) | |
@@ -41,7 +41,7 @@ Status: ✅ decided · 🔶 proposed/inferred · ❓ unknown · 💤 legacy only
 | **Life stage** | stage 0–7 | toy ✅ | [08 §8.3](08-target-rules.md) | Needs per stage differ? (B1) | |
 | **Species** | T-Rex / Bronto / Triceratops | toy ✅ | Set at the tail stage from meals in stages 1–2 | — | |
 | **DEAD** | final | toy ✅ | Dead blob with cross and halo; any stage; stays until **reset** (pinhole) ✅ | Death timers (Q-DEATH-1) | |
-| **Angel / Demon** | final | toy ✅ | Locked, no care; decided by hidden care score | Factors deferred (CARE-02) | |
+| **Angel / Demon** | final | toy ✅ | Locked, no care; decided by the hidden care score (CARE-03…08) | Draft numbers in use (16) | |
 
 ## 11.3 Environment
 

@@ -37,7 +37,7 @@ Source: `rakuraku.pdf`, a scan of the toy's own leaflet in Portuguese (European,
 
 ## 17.3 SuperHappy as implemented
 
-A won game takes happiness from VeryHappy to SuperHappy when **all** hold: hunger above 3 bowls and thirst above 3 glasses (7 of 8 half-steps), education B+ or better, no sickness, no dirt, no too-hot or too-cold. The last three go beyond your list ("and so on"): please confirm. The thresholds are `care.superHappy` in `tuning.ts`. Nothing else depends on SuperHappy yet (no extra effect, no change to decay); over-play counts it like VeryHappy.
+A won game takes happiness from VeryHappy to SuperHappy when **all** hold: hunger above 3 bowls and thirst above 3 glasses (7 of 8 half-steps), education B+ or better, no sickness, no dirt, no too-hot or too-cold. The last three go beyond your list ("and so on"): please confirm. The thresholds are `care.superHappy` in `tuning.ts`. Its only effects are the care-score bonus (CARE-05, round 18: one point back for each hour spent SuperHappy, up to 8) and the over-play count, which treats it like VeryHappy.
 
 ## 17.4 The blinking icon as implemented
 
