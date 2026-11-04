@@ -69,6 +69,7 @@ A "full action set" for a form 🔶:
 | drink | 3–4 | drinking |
 | burp | 1–2 | after eating/drinking |
 | happy | 2 | petting, playing |
+| **super happy** | 2 | SuperHappy (HAP-05); the sixth mood face on the status screen has sparkles, as on the manual's report |
 | medicate | 2–3 | medicine |
 | refuse (negate) | 2 | healthy pet given medicine, or full pet offered food |
 | **too hot** | 2 | TOO_HOT |
@@ -94,7 +95,7 @@ Each wave leaves the game playable and shows the new forms as they're drawn. Unt
 
 | Wave | Contents | Unlocks |
 |------|----------|---------|
-| **1. Core loop** | Egg (idle + crack + hatch), **small blob** full action set, shared props (6 foods, glass, shower, syringe, lamp/"z", AC/thermometer), **dead blob with cross and halo**, status screens (mood faces, bowls, glasses, temperature), the **10 icon silhouettes** | The whole care loop for the first 2 days; everything testable end to end |
+| **1. Core loop** | Egg (idle + crack + hatch), **small blob** full action set, shared props (6 foods, glass, shower, syringe, lamp/"z", AC/thermometer), **dead blob with cross and halo**, status screens (**six mood faces**, bowls, glasses, temperature, the education grade), the **10 icon silhouettes** | The whole care loop for the first 2 days; everything testable end to end |
 | **2. Big blob** | Big blob full action set | Stage 2, plus the species feeding window |
 | **3. Tail & legs** | Blob with tail and blob with tail & legs, base sets + **3 species overlays** (T-Rex mohawk, Triceratops horn; Brontosaurus has none) | Stages 3–4, species reveal |
 | **4. Teen & adult** | Teenager and adult base sets, species overlays or full sets | Stages 5–6 |

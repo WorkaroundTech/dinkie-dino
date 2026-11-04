@@ -62,6 +62,7 @@ Two sources, in this order of precedence:
 | 14  | [Localization](docs/14-localization.md)                             | pt-BR (primary), English, later Latin American Spanish: what is translated, the typed-catalog design, tests, draft glossary         |
 | 15  | [Pacing report](docs/15-pacing-report.md)                           | The simulator (`npm run sim`): what the rules demand of a player, what was tuned, three findings that need your decision            |
 | 16  | [Care score draft](docs/16-care-score-proposal.md)                  | A proposed score for Angel vs Demon (care mistakes per episode), calibrated with the simulator, waiting for your corrections        |
+| 17  | [The toy manual](docs/17-manual-review.md)                          | What the scanned manual confirmed, changed and added (AC at night, six happiness levels, the blinking icon), and your rulings       |
 
 ## Conventions used in these docs
 

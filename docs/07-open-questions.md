@@ -38,7 +38,7 @@ The decisions made so far are in the log below; decided rules live in [08](08-ta
 | 6 | Q-BLOG-1 (C7) | **No poop.** The pet gets **dirty** (looks dark) and needs a **shower**. → DIRT-01…05 |
 | 6 | Q-BLOG-1 (C2/C3) | **Pet** raises happiness and education but **never tops them up**: education stops at **C+**, happiness stops below the maximum. **Only Jokenpo tops up happiness; only studying tops up education.** → HAP-01…04, EDU-01…03 |
 | 6 | Q-BLOG-1 (C4) | **Jokenpo rounds configurable 3–5.** Playing raises happiness; **playing too much may lower education.** → PLAY-01, HAP-03, EDU-04 |
-| 6 | Q-ATTN-2 | **Deferred**: revisit later. → LCD-06 |
+| 6 | Q-ATTN-2 | **Deferred**: revisit later. → LCD-06 (**closed in round 17**: one icon blinks, ATTN-01/02) |
 | 7 | Q-HAP-1 / Q-EDU-1 (amounts) | **Pacing target:** every need meter must need **at least 2 interactions per day**; rates and amounts are derived and tunable. → PACE-01 |
 | 7 | Q-EDU-1 (over-play) | Over-play = **about 3–5 games after VeryHappy is reached**; then education may drop. → EDU-04 |
 | 7 | Q-PLAY-3 | **Winning makes the pet happier; a loss leaves it unchanged; consecutive losses may lower happiness.** → PLAY-04…06 |
@@ -87,12 +87,13 @@ The decisions made so far are in the log below; decided rules live in [08](08-ta
 | 16 | 44–50 | **Hatching:** empty hunger, thirst and education, happiness in the middle, **light on**, AC off; the egg is only an animation. No other causes of sickness. **Refuse food when full, and food that does not suit the species even when hungry.** No discipline mechanic. A visual clue for AC / light on is to be studied. No other minigames. → LIFE-01, FOODSP-01 |
 | 16 | 51–53 | A lit room at night stays at **60%**; Angel and Demon stay **locked until reset** in v1; the Check screen shows weight in kg and age as a number. |
 | 16 | 54–56 | The new survival numbers are **enough**. A **bath window in the first hour after waking** is added. Shell colour and pacing can be changed at any time. → DIRT-06, SURVIVE-01 |
+| 17 | 65–76 | **The toy manual** ([17](17-manual-review.md)): the left-hand action stays a gentle **Pet** (the toy's Discipline is not copied); the **AC works while the pet sleeps**; happiness has **six levels**, **SuperHappy** reached only by a won game while well fed, watered, educated and healthy; the glossary uses **pt-BR** terms; Jokenpo **default 5 rounds**; the sound chord stays; our bath windows stay; weight ranges by age later; **one icon blinks slowly** for the main problem (order proposed); the branch happens at the tail. → SLEEP-09, HAP-05, PLAY-01, ATTN-01/02, SPEC-08 |
 
 ---
 
 # Open questions
 
-Numbered so you can answer by number. The bracketed text is my proposed default. Questions 1 to 56 are answered (see the decisions log).
+Numbered so you can answer by number. The bracketed text is my proposed default. Questions 1 to 56 and 65 to 76 are answered (see the decisions log); 57 to 64, 77 and 78 are open.
 
 57. **Care score draft** ([16](16-care-score-proposal.md)): the list of mistakes (sick, too hot, too cold, dirty, light left on, hungry, thirsty, sad), their weights (1 to 3 points), their graces (15 minutes to 2 hours) and the threshold (**Angel at 32 points or fewer**, about 1.7 a day). Accept, or what should change? [Accept as drafted, then tune]
 58. **Triceratops foods:** you said every species has one caloric and one non-caloric food. Triceratops has Noodles (caloric); which is its non-caloric one? I assumed it, being "pasta / everything", **accepts all foods**. [Accepts all]
@@ -102,6 +103,9 @@ Numbered so you can answer by number. The bracketed text is my proposed default.
 62. **Light on at hatching:** a pet that hatches in the evening goes to sleep with the light on and wakes up sick 60% of the time unless the player switches it off. Intended, as a first lesson? [Yes]
 63. **A newborn nobody looks at is gone in about a day** (it hatches with empty hunger and thirst). Acceptable? [Yes]
 64. **Showing the expected bedtime** (BED-01): where? [On the clock screen, "sleeps at 19:00", and in the settings next to the latest-bedtime setting]
+
+77. **SuperHappy** ([17](17-manual-review.md) §17.3): is my reading right? Hunger and thirst above 3 icons (7 of 8), education B+ or better, and also no sickness, dirt, or heat / cold. Does SuperHappy do anything besides its sixth face (a care-score point, a slower decay)? [No extra effect]
+78. **The blinking icon order** (ATTN-02): sick, too cold / hot, dirty, thirsty, hungry, sad; asleep only the lamp, then the AC. Is Pet the right fix to blink for SAD (or Play)? [Accept]
 
 ## Tuning backlog (not questions)
 

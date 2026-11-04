@@ -131,7 +131,7 @@ A **hidden** number that records how well the pet was looked after. It is never 
 | LCD-03 | The small blob occupies only **8 × 6–7 dots** of the 19 × 16 grid, positioned in the lower-middle, and larger forms use more of it. Props (food, glass, shower) share the grid with the pet. | ✅ measured |
 | LCD-04 | **Confirmed by you:** the real toy's main LCD is **19 × 16 dots**. | ✅ |
 | LCD-05 | **Icon bars are separate from the dot matrix.** The 5 left and 5 right action icons are fixed shapes printed on the shell, each with its own segment that is either lit or unlit as a whole (like Nintendo Game & Watch LCDs). They are not drawn on the 19 × 16 grid. The selected action is shown by lighting its segment. | ✅ |
-| LCD-06 | The selected icon lights its segment. Whether attention calls (or the AC/light being on) light anything is **deferred**: the blog claims "there is no attention icon", and you chose to **revisit this later**. No blinking-segment design for now. | ⏸ deferred |
+| LCD-06 | The selected icon lights its segment. Which icon **blinks** to call for attention is ATTN-01/02 (round 17). | ✅ |
 
 Art format and the wave plan: [10](10-art-spec.md).
 
@@ -194,7 +194,7 @@ Pet in TOO_COLD at 18 °C
 | SLEEP-06 | Small and big blob **19:00**; blob with tail **19:30**; with legs **20:00**; teenager **21:00**; adult **22:00**. The tail and teenager times sit between the toy's tiers as an experiment (round 16). **The player must be shown the pet's expected bedtime.** | ✅ toy tiers / 🔶 experiment |
 | SLEEP-07 | The player sets the **latest bedtime** (default 22:00): each stage goes to bed at its own time, **never later than this**, so someone who cannot stay awake for an adult pet can have it sleep earlier. Fixed times, not drawn each night (round 16). | ✅ |
 | SLEEP-08 | ❓ What the sleeping pet and the pet with the light on look like. | ❓ |
-| SLEEP-09 | **While the pet sleeps, the player can only use Lamp, Check and Clock.** Every other action (Drink, Food, Pet, Play, Educate, Bath, AC, Medical) is unavailable. (So Bath cannot be used while asleep, even if DIRTY.) | ✅ |
+| SLEEP-09 | **While the pet sleeps, the player can only use Lamp, AC, Check and Clock** (the manual: "you can only check on the report and turn on/off the light or air-conditioner", round 17). Every other action (Drink, Food, Pet, Play, Educate, Bath, Medical) is unavailable, so Bath cannot be used while asleep, even if DIRTY. A pet suffering from the room can be freed at night. | ✅ |
 | SLEEP-10 | **Temperature during sleep:** if the pet is **not** in TOO_HOT or TOO_COLD, the room temperature **resets to the comfort zone** while it sleeps. If it **is** in TOO_HOT / TOO_COLD, the temperature **stays at the same value for the whole night**. 🔶 Either way there is **no temperature drift overnight** (no ticks), and ticks resume at wake-up in the direction the AC was left. 🔶 Reset happens at **bedtime**, to a value inside the band (e.g. 25 °C). | ✅ rule / 🔶 timing, value |
 | SLEEP-11 | **Asleep, needs still decay, but attenuated by 4–8×** compared to the awake rate (🔶 default 6×, **tunable**). Adverse conditions' **consequences are applied only at the morning wake-up** (sickness rolls, happiness drops), like the DIRTY state (DIRT-08). This includes TOO_HOT / TOO_COLD. | ✅ range / 🔶 default |
 | SLEEP-12 | **Death checks do not run while the pet sleeps.** So at wake-up the player gets **a chance to save the pet**. 🔶 The first death check after waking happens at the **next 15-minute check**, not at the instant of waking. | ✅ / 🔶 timing |
@@ -233,20 +233,21 @@ Pet in TOO_COLD at 18 °C
 
 ## 8.13 Care actions and the happiness / education meters
 
-Decided in round 6. Happiness has **5 levels** (VerySad, Sad, Normal, Happy, VeryHappy); education has **grades** (see EDU-01).
+Decided in round 6, extended in round 17. Happiness has **6 levels**: the five normal ones (**VerySad, Sad, Normal, Happy, VeryHappy**) and a **SuperHappy** above them (HAP-05); education has **grades** (see EDU-01).
 
 | ID | Rule | Status |
 |----|------|--------|
 | HAP-01 | **Pet** raises happiness, but **can never top it up**. 🔶 Cap = one level below the maximum (**Happy**). | ✅ / 🔶 cap |
-| HAP-02 | **Only playing Jokenpo can top up happiness** to VeryHappy. | ✅ |
+| HAP-02 | **Only playing Jokenpo can top up happiness** to VeryHappy, and a won game is one level. | ✅ |
 | HAP-03 | Happiness from Play depends on **winning** (PLAY-04…07), not on merely playing. This **replaces** the earlier "playing always raises happiness". | ✅ |
 | HAP-04 | Ice Cream raises happiness by **1 level**, capped like Pet (ICE-04). It does not cure SAD in any special way. | ✅ |
+| HAP-05 | **SuperHappy** (round 17) is a sixth level that **only a won game can reach, from VeryHappy, and only when the pet is in good shape**: hunger **above 3 bowls**, thirst **above 3 glasses** (7 of 8 half-steps), education **B+ or better**, and no sickness, dirt or temperature trouble. Pet and Ice Cream still stop at Happy. Decay, over-play (it counts like VeryHappy) and the rest are unchanged. 🔶 "and so on" is read as the no-sickness, no-dirt, no-heat-or-cold list. | ✅ / 🔶 reading |
 | EDU-01 | 🔶 Education has **5 grades: E+, D+, C+, B+, A+**, starting at **E+**. Implied by "Pet should not raise education past C+" and by the blog; not stated outright. | 🔶 confirm |
 | EDU-02 | **Educate** (the Book) raises education, up to **A+**. **Only studying can reach B+ and A+.** | ✅ |
 | EDU-03 | **Pet** also raises education, but **never past C+**. | ✅ |
-| EDU-04 | **Playing too much may decrease education.** Over-play counts **games** (never rounds). It starts **once happiness has reached VeryHappy**: after about **3–5 further games** (🔶 a threshold drawn between 3 and 5), each further game may lower education by one grade (chance **tunable**). | ✅ games / 🔶 mechanics |
+| EDU-04 | **Playing too much may decrease education.** Over-play counts **games** (never rounds). It starts **once happiness has reached VeryHappy** (SuperHappy counts too): after about **3–5 further games** (🔶 a threshold drawn between 3 and 5), each further game may lower education by one grade (chance **tunable**). | ✅ games / 🔶 mechanics |
 | EDU-05 | The over-play counter **resets on two events**: when happiness **leaves VeryHappy**, and at the **morning wake-up**. The education drop is **1 grade**, with a **50%** chance per extra game after the threshold (**tunable**). | ✅ |
-| PLAY-01 | **A Jokenpo game has 3 to 5 rounds** (configurable). 🔶 Default 3. **Rounds only decide who wins the game**: the winner is whoever wins the **majority of the rounds** (2 of 3, 3 of 5). | ✅ rounds / 🔶 majority, default |
+| PLAY-01 | **A Jokenpo game has 3 to 5 rounds** (configurable). **Default 5** (the manual's: the pet needs 3 wins of 5, round 17). **Rounds only decide who wins the game**: the winner is whoever wins the **majority of the rounds** (2 of 3, 3 of 5). | ✅ rounds, default / 🔶 majority |
 | PLAY-02 | Rock-paper-scissors against the pet, uniformly random pet choice; ties use up a round (legacy PLAY-03…07). | 💤 legacy, kept |
 | PLAY-03 | **Winning matters** (round 7): see PLAY-04…07. | ✅ |
 | PLAY-04 | Happiness is counted **per game, not per round**. **The pet wins the game → happiness +1 level** (and can reach VeryHappy, HAP-02). 🔶 "Winning" = the **pet's** win; +1 level per won game. | ✅ per game / 🔶 whose, amount |
@@ -321,3 +322,17 @@ You agreed on a v1 of the *full care loop*: stat decay, sickness & medicine, dir
 | WEIGHT-06 | The healthy range and the "too heavy" limit depend on the stage; the numbers and the step (a quarter of a kg per gain) are **placeholders**. | ⏸ placeholders |
 | WEIGHT-07 | Being underweight has **no consequence** in v1 (🔶 default). | 🔶 |
 | BED-01 | The pet's **expected bedtime must be shown to the player** (round 16), for example on the clock screen. How is a UI decision. | ✅ requirement |
+
+
+## 8.20 The manual (round 17)
+
+The scanned toy manual ([17](17-manual-review.md)) confirmed most of the model and changed or added the following.
+
+| ID | Rule | Status |
+|----|------|--------|
+| ATTN-01 | **One icon blinks slowly** to show what would fix the pet's **main problem** at that moment (the toy's behaviour, remembered by the owner). When there are several problems only one icon blinks. This replaces the "no attention icon" of the blog (C9 closed). | ✅ |
+| ATTN-02 | **Which problem is the main one** (🔶 proposal, ordered by how soon each hurts the pet): **sick** (Medicine), **too cold / too hot** (AC), **dirty** (Bath), **thirsty** (Drink), **hungry** (Food), **sad** (Pet). Asleep, only what works at night counts: a **light left on** (Lamp), then **suffering from the room** (AC). A dead or locked pet blinks nothing. `attentionIcon` in the core. | 🔶 order |
+| PET-02 | The toy calls the left-hand action **Discipline** and means it for scolding an angry pet. **Dinkie Dino keeps the gentle Pet action** with the rules already decided (HAP-01, EDU-03): there is no angry pet and nothing to scold. | ✅ |
+| BATH-01 | The toy refuses a shower when the pet has had enough; Dinkie Dino keeps its own **bath windows** (DIRT-06) instead. | ✅ |
+| WEIGHT-08 | The manual's sample weight (0.5 kg at age 14) is only an example. Weight ranges will be set **by age** later. | ⏸ placeholders |
+| SPEC-08 | **The first two blob stages have no species**; the branch happens when the **tail** is received. The three tails differ: **T-Rex a mohawk, Brontosaurus a smooth round head, Triceratops a small horn on one side**. (Confirms SPEC-01 and the art spec.) | ✅ |

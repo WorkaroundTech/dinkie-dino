@@ -57,7 +57,7 @@ The string count is small (roughly 100 to 150), and the dependency policy is "on
 
 ## 14.4 Glossary (draft, for you to correct)
 
-There was **no Brazilian manual** to take the wording from, so the **pt-BR column is drafted from scratch** and is my proposal for you to correct. The Spanish column is a placeholder for later and needs a native reviewer.
+There is no Brazilian manual. The scanned toy manual has a **European Portuguese** section (broken, partly machine-translated) and a Spanish one; they were used as a **base only** (round 17, see [17](17-manual-review.md)) and the wording is **pt-BR**. The pt-BR column is my proposal for you to correct. The Spanish column is a placeholder for later and needs a native reviewer.
 
 | Concept | pt-BR (proposed) | en | es-419 (later) |
 |---------|------------------|----|----------------|
@@ -65,10 +65,10 @@ There was **no Brazilian manual** to take the wording from, so the **pt-BR colum
 | Food | Comida | Food | Comida |
 | Lamp | Luz | Lights | Luz |
 | Pet | Carinho | Pet | Mimos |
-| Check | Status | Status | Estado |
-| Play | Jogar | Play | Jugar |
+| Check | Relatório | Status | Informe |
+| Play | Brincar | Play | Jugar |
 | Educate | Estudar | Educate | Estudiar |
-| Bath | Banho | Bath | Baño |
+| Bath | Banho (de chuveiro) | Bath | Ducha |
 | Air conditioner | Ar-condicionado | Air conditioner | Aire acondicionado |
 | Medicine | Remédio | Medicine | Medicina |
 | Clock | Relógio | Clock | Reloj |
@@ -87,6 +87,21 @@ There was **no Brazilian manual** to take the wording from, so the **pt-BR colum
 | Rock-paper-scissors | Jokenpô: Pedra, Papel, Tesoura | Rock, Paper, Scissors | Piedra, papel o tijera |
 | Reset | Reiniciar | Reset | Reiniciar |
 | Wake-up time / bedtime | Hora de acordar / Hora de dormir | Wake-up time / Bedtime | Hora de despertar / Hora de dormir |
+
+### Terms taken from the manual (round 17)
+
+| Concept | Manual (pt-PT) | pt-BR (proposed) | Manual (es) |
+|---------|----------------|------------------|-------------|
+| Report (Check) | Relatório | Relatório | Informe |
+| Play | Brincar | Brincar | Jugar |
+| Study | Estudo | Estudar | Estudio |
+| Shower | Banho de chuveiro | Banho | Ducha |
+| Discipline grade shown in the report | Disciplina | Disciplina (the education grade; the action stays Pet) | Disciplina |
+| Ice cream | Gelado | Sorvete | Helado |
+| Noodles | Talharim | Macarrão | Tallarines |
+| Chicken | Frango | Coxa de frango | Pollo |
+| Alarm | Alarme | Alerta | Alerta |
+| Game over | Jogo acabado | Fim de jogo | Fin de juego |
 
 ## 14.5 Process
 
@@ -107,4 +122,4 @@ There was **no Brazilian manual** to take the wording from, so the **pt-BR colum
 
 ## 14.7 Open questions
 
-Decided in round 15: the glossary is drafted from scratch (and reviewed by you), an unmatched browser language shows **English**, the clock is **24-hour**, the grades **A+ to E+** stay as on the toy, Spanish comes **after v1 with a native reviewer**, the docs stay in English (a pt-BR README later), and there is **one URL** with an in-app language switch. Nothing is open here except the wording of the glossary itself.
+Decided in round 15 and 17: the glossary is drafted by me with the manual's Portuguese as a base but pt-BR terms ("Sorvete", not "Gelado"), reviewed by you, an unmatched browser language shows **English**, the clock is **24-hour**, the grades **A+ to E+** stay as on the toy, Spanish comes **after v1 with a native reviewer**, the docs stay in English (a pt-BR README later), and there is **one URL** with an in-app language switch. Nothing is open here except the wording of the glossary itself.
