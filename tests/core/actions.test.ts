@@ -234,10 +234,14 @@ describe('weight from food (round 15)', () => {
     return heavier / n;
   };
 
-  it('caloric foods (Apple, Hamburger, Noodles) add weight about 75% of the time', () => {
-    for (const f of ['apple', 'hamburger', 'noodles'] as const) {
+  it('caloric foods (Apple, Hamburger) add weight about 75% of the time', () => {
+    for (const f of ['apple', 'hamburger'] as const) {
       expect(Math.abs(gainRate(f) - 0.75), f).toBeLessThan(0.03);
     }
+  });
+
+  it('Noodles, the middle term, sometimes add weight (about 40%)', () => {
+    expect(Math.abs(gainRate('noodles') - 0.4)).toBeLessThan(0.03);
   });
 
   it('non-caloric foods (Carrot, Chicken Thigh) do not add weight to a healthy pet', () => {

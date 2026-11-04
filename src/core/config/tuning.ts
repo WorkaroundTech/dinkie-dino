@@ -1,5 +1,5 @@
 import type { FoodType } from '../actions';
-import type { CareStage, Species } from '../state';
+import type { CareKind, CareStage, Species } from '../state';
 
 /**
  * Every tunable number of the simulation, with the rule it implements. Values marked
@@ -120,8 +120,10 @@ export interface Tuning {
      * Foods that add weight: caloric ones with a chance, the hyper-caloric Ice Cream always;
      * non-caloric ones only when the pet is below its healthy range (round 16).
      */
-    foodKind: Record<FoodType, 'caloric' | 'hyperCaloric' | 'nonCaloric'>;
+    foodKind: Record<FoodType, 'caloric' | 'mediumCaloric' | 'hyperCaloric' | 'nonCaloric'>;
     caloricGainChance: number;
+    /** Noodles: "sometimes" adds weight (round 18). */
+    mediumGainChance: number;
     gainKg: number;
     /** Weight is burned by winning a game (with a chance) and, steadily, by being above the healthy range. */
     winBurnChance: number;
@@ -172,6 +174,28 @@ export interface Tuning {
   species: {
     /** A food group with more than this share of the meals wins outright (SPEC-02). */
     majorityShare: number;
+  };
+
+  /** The hidden care score and what it does (CARE-03…08, round 18). */
+  careScore: {
+    /** Each care mistake: its cost, and the checks it may last before it counts (awake checks; asleep for the light). */
+    mistakes: Record<CareKind, { points: number; graceChecks: number }>;
+    /**
+     * The pet becomes an Angel with at most this many points, a Demon otherwise (CARE-04). The limit is
+     * `angelAtOrBelow` until the pet has lived long enough for `angelPointsPerDay` to be more: a longer
+     * life is allowed more points (round 18).
+     */
+    angelAtOrBelow: number;
+    angelPointsPerDay: number;
+    /** Time spent SuperHappy earns points back: one episode of `minChecks` awake checks gives `points`, up to `maxPoints` in a life. */
+    superHappy: { minChecks: number; points: number; maxPoints: number };
+    /**
+     * What good care buys. `quality` is 1 with no points and falls to 0 at the Angel limit (which grows with wake-ups).
+     * Sickness at wake-up and on entering the room's cold or heat, and the instant death on entering it,
+     * are up to `maxRiskReduction` less likely. When the pet reaches its drawn final-form wake-up
+     * it lives on by `quality` of the way up to `maxWakeUps` first.
+     */
+    longevity: { maxRiskReduction: number; maxWakeUps: number };
   };
 
   growth: {
@@ -248,12 +272,13 @@ export const DEFAULT_TUNING: Tuning = {
     foodKind: {
       apple: 'caloric',
       hamburger: 'caloric',
-      noodles: 'caloric',
+      noodles: 'mediumCaloric',
       iceCream: 'hyperCaloric',
       carrot: 'nonCaloric',
       chicken: 'nonCaloric',
     },
     caloricGainChance: 0.75, // "something like ~75%"
+    mediumGainChance: 0.4, // noodles: the middle term, sometimes (round 18)
     gainKg: 0.25, // a quarter of a kg per gaining meal: a thorough visit gives several meals
     winBurnChance: 0.5, // a won game burns weight half the time
     burnKg: 0.25,
@@ -308,6 +333,23 @@ export const DEFAULT_TUNING: Tuning = {
   },
 
   species: { majorityShare: 0.5 },
+
+  careScore: {
+    mistakes: {
+      sick: { points: 3, graceChecks: 4 }, // 1 hour
+      tooCold: { points: 2, graceChecks: 4 },
+      tooHot: { points: 2, graceChecks: 4 },
+      dirty: { points: 2, graceChecks: 8 }, // 2 hours
+      lightOn: { points: 2, graceChecks: 1 }, // 15 minutes of the night
+      hungry: { points: 1, graceChecks: 4 },
+      thirsty: { points: 1, graceChecks: 4 },
+      sad: { points: 1, graceChecks: 8 },
+    },
+    angelAtOrBelow: 32, // about 1.7 points a day for a 19-day life (docs/16)
+    angelPointsPerDay: 1.7, // 51 points at day 30
+    superHappy: { minChecks: 4, points: 1, maxPoints: 8 }, // one hour per point (round 18)
+    longevity: { maxRiskReduction: 0.1, maxWakeUps: 30 }, // 10% and up to 30 days (round 18)
+  },
 
   growth: {
     arrivalWakeUps: { bigBlob: 2, tail: 5, legs: 8, teen: 11, adult: 15 }, // LIFE table

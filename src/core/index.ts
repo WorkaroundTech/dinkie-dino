@@ -1,5 +1,13 @@
 export { act, canDo } from './actions';
 export type { Action, ActionResult, FoodType, Refusal } from './actions';
+export {
+  angelLimit,
+  carePoints,
+  careQuality,
+  careVerdict,
+  lifeExtension,
+  riskFactor,
+} from './rules/care';
 export { attentionIcon } from './rules/attention';
 export type { AttentionIcon } from './rules/attention';
 export { canBeSuperHappy } from './rules/mood';
@@ -16,9 +24,19 @@ export { DEFAULT_TUNING } from './config/tuning';
 export type { Range, Tuning } from './config/tuning';
 export { PACINGS, tuningForPacing } from './config/profiles';
 export type { Pacing } from './config/profiles';
-export { createPet, isHalted, METER_MAX, SCHEMA_VERSION, SUPER_HAPPY, VERY_HAPPY } from './state';
+export {
+  CARE_KINDS,
+  createPet,
+  isHalted,
+  METER_MAX,
+  SCHEMA_VERSION,
+  SUPER_HAPPY,
+  VERY_HAPPY,
+} from './state';
 export type {
   PetState,
+  CareKind,
+  CareLedger,
   Stage,
   Species,
   FinalForm,

@@ -1,5 +1,6 @@
 import type { Tuning } from '../config/tuning';
 import type { Context } from '../context';
+import { riskFactor } from './care';
 import type { GameEvent, SickCause } from '../events';
 import { chance, randInt } from '../rng';
 import type { DeathCause, PetState } from '../state';
@@ -65,7 +66,8 @@ export function rollWakeSickness(
   if (pet.sick) return;
 
   const { lightOn, lightOff } = ctx.tuning.health.wakeSickChance;
-  if (chance(pet.seed, pet.wakeUps, 'wakeSick', lit ? lightOn : lightOff)) {
+  const risk = riskFactor(pet, ctx.tuning);
+  if (chance(pet.seed, pet.wakeUps, 'wakeSick', (lit ? lightOn : lightOff) * risk)) {
     becomeSick(pet, atMs, lit ? 'light' : 'wake', events);
   }
 }

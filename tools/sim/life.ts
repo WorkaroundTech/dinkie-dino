@@ -1,5 +1,6 @@
 import type {
   Action,
+  CareKind,
   Condition,
   Context,
   DeathCause,
@@ -8,9 +9,15 @@ import type {
   SickCause,
   Species,
 } from '../../src/core';
-import { act, advanceInPlace, conditionsOf, createPet, isHalted, TICK_MS } from '../../src/core';
-import { CareTracker } from './care';
-import type { MistakeKind } from './care';
+import {
+  act,
+  advanceInPlace,
+  carePoints,
+  conditionsOf,
+  createPet,
+  isHalted,
+  TICK_MS,
+} from '../../src/core';
 import type { Player } from './players';
 import { runSession, sessionMinutes } from './players';
 
@@ -38,7 +45,7 @@ export interface LifeReport {
   /** How many times the pet fell sick, and of what. */
   sickBy: Partial<Record<SickCause, number>>;
   /** The proposed care score (docs/16): mistakes by kind, and the points they cost. */
-  careMistakes: Record<MistakeKind, number>;
+  careMistakes: Record<CareKind, number>;
   carePoints: number;
 }
 
@@ -76,7 +83,6 @@ export function simulateLife(options: LifeOptions): LifeReport {
   let awakeChecks = 0;
   let sessions = 0;
   const sickBy: LifeReport['sickBy'] = {};
-  const care = new CareTracker();
 
   const replace = (current: PetState, action: Action): PetState =>
     act(current, action, current.lastCheckIndex * TICK_MS, ctx).state;
@@ -99,7 +105,6 @@ export function simulateLife(options: LifeOptions): LifeReport {
       sessions += 1;
     }
 
-    care.observe(pet, ctx);
     if (!pet.asleep) {
       awakeChecks += 1;
       const shown = conditionsOf(pet, ctx);
@@ -123,7 +128,7 @@ export function simulateLife(options: LifeOptions): LifeReport {
     conditionChecks,
     actions: log.actions,
     sickBy,
-    careMistakes: care.mistakes,
-    carePoints: care.points,
+    careMistakes: pet.care.counts,
+    carePoints: carePoints(pet, ctx.tuning),
   };
 }

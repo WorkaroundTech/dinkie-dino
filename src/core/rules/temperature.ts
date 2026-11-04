@@ -2,6 +2,7 @@ import type { Context } from '../context';
 import type { GameEvent } from '../events';
 import { chance, randInt } from '../rng';
 import type { PetState, Room } from '../state';
+import { riskFactor } from './care';
 import { becomeSick, die } from './health';
 import { lower } from './meters';
 
@@ -78,9 +79,11 @@ function tryEnter(
 
   setZone(pet, zone, atMs, events);
   lower(pet.needs, 'happiness', entry.happinessDrop);
-  if (chance(pet.seed, tick, 'zoneSick', entry.sickChance))
+  const risk = riskFactor(pet, ctx.tuning);
+  if (chance(pet.seed, tick, 'zoneSick', entry.sickChance * risk))
     becomeSick(pet, atMs, 'temperature', events);
-  if (chance(pet.seed, tick, 'zoneShock', entry.deathChance)) die(pet, 'shock', atMs, events);
+  if (chance(pet.seed, tick, 'zoneShock', entry.deathChance * risk))
+    die(pet, 'shock', atMs, events);
 }
 
 /**

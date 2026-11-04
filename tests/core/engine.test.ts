@@ -160,7 +160,7 @@ describe('growth timeline (LIFE table)', () => {
 });
 
 describe('final form (LIFE-04, LIFE-05, LIFE-07)', () => {
-  it('arrives on exactly the drawn wake-up, always between 16 and 20', () => {
+  it('arrives on exactly the drawn wake-up, between 16 and 20, for a pet that was not cared for', () => {
     const seen = new Set<number>();
     for (let seed = 1; seed <= 300; seed++) {
       const pet = newPet(at(0, 12), seed);
@@ -168,7 +168,7 @@ describe('final form (LIFE-04, LIFE-05, LIFE-07)', () => {
 
       expect(state.stage).toBe('final');
       expect(state.wakeUps).toBe(pet.finalFormAtWakeUp);
-      expect(state.finalForm).toBe('angel'); // care score is a stub for now (CARE-02)
+      expect(state.finalForm).toBe('demon'); // it left the light on every night (CARE-03)
       expect(events.filter((e) => e.type === 'finalForm')).toHaveLength(1);
       seen.add(state.wakeUps);
     }

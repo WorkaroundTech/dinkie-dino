@@ -280,6 +280,7 @@ describe('sickness and medicine (SICK-01, SICK-02, MED-01…05)', () => {
 describe('waking up sick after a night with the light on (SLEEP-02, SLEEP-03)', () => {
   const ctx = calmContext(undefined, (t) => {
     t.health.wakeSickChance = { lightOff: 0.02, lightOn: 0.6 };
+    t.careScore.longevity.maxRiskReduction = 0; // the chance itself, not what good care takes off it
   });
 
   /** Hatch at 18:00, go to bed at 19:00, leave the light as given, wake at 07:00. */

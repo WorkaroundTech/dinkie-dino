@@ -187,7 +187,7 @@ describe('one simulated life', () => {
     });
     expect(report.outcome).toBe('final');
     expect(report.wakeUps).toBeGreaterThanOrEqual(16);
-    expect(report.wakeUps).toBeLessThanOrEqual(20);
+    expect(report.wakeUps).toBeLessThanOrEqual(30); // a well cared for pet lives on (CARE-07)
     expect(report.finalForm).toBe('angel');
   });
 });

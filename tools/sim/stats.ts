@@ -26,6 +26,8 @@ export interface Summary {
   mistakesPerLife: Record<string, number>;
   /** Of the pets that reached the final form: the share with at most this many care points. */
   angelShareAtMost: Record<number, number>;
+  /** Of the pets that reached the final form: the share that actually became an Angel. */
+  angelShare: number;
 }
 
 /** The p-th percentile (0 to 1) by linear interpolation; 0 for an empty list. */
@@ -116,6 +118,12 @@ export function summarize(reports: readonly LifeReport[]): Summary {
         0.9,
       ),
     },
+    angelShare: (() => {
+      const finals = reports.filter((r) => r.outcome === 'final');
+      return finals.length === 0
+        ? 0
+        : finals.filter((r) => r.finalForm === 'angel').length / finals.length;
+    })(),
     angelShareAtMost: Object.fromEntries(
       [8, 16, 24, 32, 48].map((limit) => {
         const finals = reports.filter((r) => r.outcome === 'final');

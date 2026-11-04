@@ -18,7 +18,7 @@ const HELP = `Dinkie Dino simulator
   --pacing P           normal (the AC wants a look every ~4 h) or relaxed (every ~8 h) (default normal)
   --room real|calm     calm = the room never changes temperature, to look at the needs alone (default real)
   --diet D             meat, plant, noodles or mixed (default mixed)
-  --days N             longest life to simulate, in days (default 30)
+  --days N             longest life to simulate, in days (default 40)
   --seed N             first seed (default 1)
   --set path=value     override a tuning number; repeatable, e.g. --set temperature.moveChance=0.06
   --json               print the raw summaries as JSON
@@ -31,7 +31,7 @@ function parseArgs(argv: string[]) {
     room: 'real',
     pacing: 'normal',
     diet: 'mixed' as DietPlan,
-    days: 30,
+    days: 40,
     seed: 1,
     json: false,
     sets: [] as string[],

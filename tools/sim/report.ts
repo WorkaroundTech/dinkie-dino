@@ -143,7 +143,7 @@ export function formatReport(results: readonly PlayerResult[], title: string): s
 
   sections.push(
     '',
-    'Proposed care score (docs/16): points per life p10 / median / p90, and mistakes per life',
+    'Care score (docs/16): points per life p10 / median / p90, and mistakes per life',
     '',
   );
   sections.push(
@@ -161,15 +161,16 @@ export function formatReport(results: readonly PlayerResult[], title: string): s
 
   sections.push(
     '',
-    'Of the pets that reach the final form, the share that would be an Angel at each threshold (care points at most)',
+    'Of the pets that reach the final form, the share that would be an Angel at each fixed threshold (care points at most), and the real one (the limit grows with the days lived)',
     '',
   );
   sections.push(
     table(
-      ['player', '8', '16', '24', '32', '48'],
+      ['player', '8', '16', '24', '32', '48', 'Angel (real)'],
       results.map(({ player, summary: s }) => [
         player,
         ...([8, 16, 24, 32, 48] as const).map((limit) => pct(s.angelShareAtMost[limit] ?? 0)),
+        pct(s.angelShare),
       ]),
     ),
   );

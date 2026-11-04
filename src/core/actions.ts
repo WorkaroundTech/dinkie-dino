@@ -193,8 +193,8 @@ function eat(pet: PetState, food: FoodType, ctx: Context): void {
 }
 
 /**
- * Weight from food (round 16). Caloric foods (Apple, Hamburger, Noodles) add weight 75% of the time;
- * the hyper-caloric Ice Cream always does; non-caloric foods (Carrot, Chicken Thigh) never do, except
+ * Weight from food (round 16, 18). Caloric foods (Apple, Hamburger) add weight 75% of the time, the
+ * middle-term Noodles 40% of the time; the hyper-caloric Ice Cream always does; non-caloric foods (Carrot, Chicken Thigh) never do, except
  * to a pet below its healthy range, which they help back up.
  */
 function gainWeight(pet: PetState, food: FoodType, ctx: Context): void {
@@ -206,6 +206,8 @@ function gainWeight(pet: PetState, food: FoodType, ctx: Context): void {
   if (kind === 'hyperCaloric') gains = true;
   else if (kind === 'caloric')
     gains = chance(pet.seed, pet.actionCounter++, 'act:calories', weight.caloricGainChance);
+  else if (kind === 'mediumCaloric')
+    gains = chance(pet.seed, pet.actionCounter++, 'act:calories', weight.mediumGainChance);
   else gains = pet.needs.weightKg < weight.healthyKg[pet.stage].low;
 
   if (gains) pet.needs.weightKg += weight.gainKg;

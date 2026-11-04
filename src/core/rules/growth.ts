@@ -1,7 +1,7 @@
 import type { Tuning } from '../config/tuning';
 import type { GameEvent } from '../events';
 import type { PetState, Stage } from '../state';
-import { careVerdict } from './care';
+import { careVerdict, lifeExtension } from './care';
 import { decideSpecies } from './species';
 
 /** The care stage a pet with this many wake-ups belongs to (LIFE table). */
@@ -28,9 +28,20 @@ export function applyMorningGrowth(
 ): void {
   if (pet.stage === 'final') return;
 
+  // On the drawn wake-up a well cared for pet lives on, once, by up to the rest of the way to the
+  // longest life (CARE-07); then it transforms on the new day.
+  if (pet.wakeUps >= pet.finalFormAtWakeUp && !pet.care.extended) {
+    pet.care.extended = true;
+    const extra = lifeExtension(pet, tuning);
+    if (extra > 0) {
+      pet.finalFormAtWakeUp += extra;
+      events.push({ type: 'lifeExtended', atMs, extraWakeUps: extra });
+    }
+  }
+
   if (pet.wakeUps >= pet.finalFormAtWakeUp) {
     pet.stage = 'final';
-    pet.finalForm = careVerdict(pet);
+    pet.finalForm = careVerdict(pet, tuning);
     events.push({ type: 'finalForm', atMs, form: pet.finalForm });
     return;
   }

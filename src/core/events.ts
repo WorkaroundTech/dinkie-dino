@@ -12,6 +12,7 @@ export type GameEvent =
   | { type: 'woke'; atMs: number; wakeUps: number }
   | { type: 'grew'; atMs: number; from: Stage; to: Stage }
   | { type: 'species'; atMs: number; species: Species }
+  | { type: 'lifeExtended'; atMs: number; extraWakeUps: number }
   | { type: 'finalForm'; atMs: number; form: FinalForm }
   | { type: 'becameDirty'; atMs: number }
   | { type: 'cleaned'; atMs: number }

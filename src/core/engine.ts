@@ -1,6 +1,7 @@
 import type { Context } from './context';
 import type { GameEvent } from './events';
 import { updateDangers, updateDirt, rollWakeSickness } from './rules/health';
+import { trackCare } from './rules/care';
 import { applyMorningGrowth } from './rules/growth';
 import { decayNeeds } from './rules/needs';
 import { syncOverplay } from './rules/play';
@@ -82,4 +83,5 @@ function processCheck(pet: PetState, tick: number, ctx: Context, events: GameEve
   updateWeight(pet, ctx, tick, atMs, awakeInterval, events);
   updateDangers(pet, ctx, tick, atMs, awakeInterval, events);
   syncOverplay(pet);
+  trackCare(pet, ctx);
 }

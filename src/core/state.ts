@@ -4,7 +4,7 @@ import { bedtimeMinutes } from './rules/sleep';
 import { isNight, tickIndexAt } from './time';
 
 /** Bumped when the saved shape changes; migrations live in migrations.ts (M5). */
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
 /**
  * Life stages after hatching (LIFE table in doc 08). The egg is only an animation that
@@ -34,6 +34,38 @@ export const METER_MAX = {
 /** The top two happiness levels: Play reaches VeryHappy; SuperHappy needs a pet in good shape (HAP-05). */
 export const VERY_HAPPY = 4;
 export const SUPER_HAPPY = 5;
+
+/** The care mistakes the hidden score counts (CARE-03). */
+export const CARE_KINDS = [
+  'sick',
+  'tooCold',
+  'tooHot',
+  'dirty',
+  'lightOn',
+  'hungry',
+  'thirsty',
+  'sad',
+] as const;
+export type CareKind = (typeof CARE_KINDS)[number];
+
+/** What the hidden care score is made of so far (rules/care.ts). */
+export interface CareLedger {
+  /** Checks the current episode of each kind has lasted; an episode keeps its count through the night. */
+  runs: Record<CareKind, number>;
+  /** Mistakes counted so far, by kind: one per episode that outlasted its grace. */
+  counts: Record<CareKind, number>;
+  /** Awake checks spent SuperHappy in the current episode. */
+  superRun: number;
+  /** Points earned back by time spent SuperHappy. */
+  bonus: number;
+  /** Set once the pet has reached its drawn final-form wake-up and its life was (maybe) extended. */
+  extended: boolean;
+}
+
+export function newCareLedger(): CareLedger {
+  const zero = () => Object.fromEntries(CARE_KINDS.map((k) => [k, 0])) as Record<CareKind, number>;
+  return { runs: zero(), counts: zero(), superRun: 0, bonus: 0, extended: false };
+}
 
 export interface Needs {
   hunger: number;
@@ -68,7 +100,10 @@ export interface PetState {
   species: Species | null;
   /** Morning wake-ups since hatching (LIFE-02). */
   wakeUps: number;
-  /** The wake-up at which the pet turns into its final form, drawn at hatching (LIFE-04). */
+  /**
+   * The wake-up at which the pet turns into its final form: drawn at hatching (LIFE-04), and later
+   * pushed back once if it was cared for well (CARE-07).
+   */
   finalFormAtWakeUp: number;
   finalForm: FinalForm | null;
   dead: { cause: DeathCause; atMs: number } | null;
@@ -87,6 +122,8 @@ export interface PetState {
   dangers: Partial<Record<DeathCause, Danger>>;
   needs: Needs;
   decay: DecayProgress;
+  /** The hidden care score (CARE-03…08). */
+  care: CareLedger;
 
   /** Meals given while the pet is a small or big blob; they decide the species (SPEC-01/05). */
   diet: Diet;
@@ -231,6 +268,7 @@ export function createPet(params: NewPetParams, ctx: Context): PetState {
     dangers: {},
     needs: { ...tuning.initial },
     decay: { hunger: 0, thirst: 0, happiness: 0 },
+    care: newCareLedger(),
     diet: { meat: 0, plant: 0, noodles: 0 },
     actionCounter: 0,
     lastCheckIndex: tickIndexAt(params.nowMs),

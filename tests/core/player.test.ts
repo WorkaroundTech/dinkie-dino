@@ -64,7 +64,7 @@ describe('a very diligent player', () => {
       expect(state.dead, `seed ${seed}`).toBeNull();
       expect(state.stage, `seed ${seed}`).toBe('final');
       expect(state.wakeUps).toBe(state.finalFormAtWakeUp);
-      expect(state.finalForm).toBe('angel'); // care score is still a stub (CARE-02)
+      expect(state.finalForm).toBe('angel'); // a thorough player makes few mistakes (CARE-03)
       expect(events.filter((e) => e.type === 'died')).toEqual([]);
     }
   });

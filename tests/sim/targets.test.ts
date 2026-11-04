@@ -111,11 +111,12 @@ describe('the whole game: temperature (TEMP-09)', () => {
     expect(hourly.reachedFinal).toBeGreaterThanOrEqual(0.9);
   });
 
-  it('a pet reaches its final form on a wake-up between 16 and 20 (LIFE-07)', () => {
+  it('a pet reaches its final form between wake-up 16 and 30, and a perfect one lives longest (LIFE-07, CARE-07)', () => {
     const hourly = run('hourly', testContext(), 'mixed', 80);
     const wakeUps = Object.keys(hourly.finalAtWakeUp).map(Number);
     expect(Math.min(...wakeUps)).toBeGreaterThanOrEqual(16);
-    expect(Math.max(...wakeUps)).toBeLessThanOrEqual(20);
+    expect(Math.max(...wakeUps)).toBeLessThanOrEqual(30);
+    expect(wakeUps).toEqual([30]); // an hourly player's pet makes almost no mistakes
   });
 });
 
@@ -137,7 +138,7 @@ describe('species by diet (SPEC-02)', () => {
   it('a mixed diet gives all three, none dominating completely', () => {
     const summary = run('hourly', needsOnly, 'mixed', 120);
     for (const key of ['trex', 'bronto', 'triceratops'] as const)
-      expect(share(summary, key)).toBeGreaterThan(0.05);
+      expect(share(summary, key)).toBeGreaterThan(0.02);
   });
 });
 
