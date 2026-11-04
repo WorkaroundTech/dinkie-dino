@@ -1,6 +1,7 @@
 import type { Action, Context, FoodType, PetState, Shape } from '../../src/core';
 import { canDo } from '../../src/core';
 import { bedtimeMinutes } from '../../src/core/rules/sleep';
+import { VERY_HAPPY } from '../../src/core/state';
 
 /** When, in a day, a player looks after the pet. All times fall on the 15-minute grid. */
 export type SessionTime =
@@ -97,7 +98,7 @@ export function runSession(
       if (!tryAction({ kind: 'pet' })) break;
     }
 
-    if (pet.needs.happiness < 4) {
+    if (pet.needs.happiness < VERY_HAPPY) {
       for (let round = 0; round < ctx.settings.jokenpoRounds; round++) {
         const shape = SHAPES[(pet.actionCounter + round) % SHAPES.length] ?? 'rock';
         if (!tryAction({ kind: 'play', shape })) break;

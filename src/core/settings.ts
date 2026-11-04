@@ -21,7 +21,7 @@ export interface Settings {
 export const DEFAULT_SETTINGS: Settings = {
   wakeMinutes: clock(7), // proposed default (TIME-05)
   latestBedtimeMinutes: clock(22), // SLEEP-05: an adult goes to bed at 22:00
-  jokenpoRounds: 3, // PLAY-01 default
+  jokenpoRounds: 5, // PLAY-01 default: the toy's manual plays 5, the pet needs 3 wins
   pacing: 'normal',
 };
 

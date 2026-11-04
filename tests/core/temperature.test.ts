@@ -303,9 +303,21 @@ describe('the AC as an action (SICK-02, SLEEP-09)', () => {
     expect(canDo(pet, { kind: 'ac' }, at(0, 8), ctx)).toBeNull();
   });
 
-  it('is refused while the pet sleeps', () => {
+  it('works while the pet sleeps, like the Lamp, unlike everything else (SLEEP-09)', () => {
     const pet = hatch(ctx, 1, at(0, 23));
-    expect(canDo(pet, { kind: 'ac' }, at(0, 23), ctx)).toBe('asleep');
+    expect(pet.asleep).toBe(true);
+    expect(canDo(pet, { kind: 'ac' }, at(0, 23), ctx)).toBeNull();
+    expect(canDo(pet, { kind: 'lamp' }, at(0, 23), ctx)).toBeNull();
+    expect(canDo(pet, { kind: 'educate' }, at(0, 23), ctx)).toBe('asleep');
+  });
+
+  it('frees a pet that is suffering from the room in the night', () => {
+    const pet = withRoom(ctx, { tempC: 33, acOn: false, zone: 'tooHot' }, 1, at(0, 18, 45));
+    const asleep = advance(pet, at(0, 19), ctx).state;
+    expect(asleep.room.zone).toBe('tooHot');
+    const { state, refused } = act(asleep, { kind: 'ac' }, at(0, 22), ctx);
+    expect(refused).toBeNull();
+    expect(state.room).toMatchObject({ zone: 'ok', tempC: 26, acOn: true });
   });
 });
 

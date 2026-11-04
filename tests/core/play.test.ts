@@ -8,6 +8,12 @@ import { at, calmContext } from './helpers';
 
 const NOW = at(0, 12);
 
+/** A calm context playing three rounds a game, which the cases below are written around. */
+function threeRounds(...args: Parameters<typeof calmContext>): Context {
+  const ctx = calmContext(...args);
+  return { ...ctx, settings: { ...ctx.settings, jokenpoRounds: 3 } };
+}
+
 function hatch(ctx: Context, seed = 1, nowMs = NOW): PetState {
   return createPet({ id: `p${seed}`, seed, nowMs }, ctx);
 }
@@ -94,7 +100,7 @@ describe('rock, paper, scissors (PLAY-02)', () => {
 });
 
 describe('a game (PLAY-01, PLAY-07)', () => {
-  const ctx = calmContext();
+  const ctx = threeRounds();
 
   it('lasts the configured number of rounds, then ends with one result', () => {
     for (const rounds of [3, 4, 5]) {
@@ -164,7 +170,7 @@ describe('a game (PLAY-01, PLAY-07)', () => {
 });
 
 describe('what a game does (PLAY-04…06, HAP-02)', () => {
-  const ctx = calmContext();
+  const ctx = threeRounds();
   const withHappiness = (level: number, seed = 1): PetState => {
     const pet = hatch(ctx, seed);
     pet.needs.happiness = level;
@@ -204,7 +210,7 @@ describe('what a game does (PLAY-04…06, HAP-02)', () => {
   });
 
   it('from the second loss in a row happiness may drop (PLAY-06)', () => {
-    const sure = calmContext(undefined, (t) => {
+    const sure = threeRounds(undefined, (t) => {
       t.play.lossHappinessDropChance = 1;
     });
     const first = playGame(withHappiness(2), LOST, sure).state;
@@ -225,7 +231,7 @@ describe('what a game does (PLAY-04…06, HAP-02)', () => {
   });
 
   it('a win breaks the streak', () => {
-    const sure = calmContext(undefined, (t) => {
+    const sure = threeRounds(undefined, (t) => {
       t.play.lossHappinessDropChance = 1;
     });
     let pet = playGame(withHappiness(2), LOST, sure).state;
@@ -236,7 +242,7 @@ describe('what a game does (PLAY-04…06, HAP-02)', () => {
   });
 
   it('a tied game changes nothing, and neither adds to nor breaks a streak', () => {
-    const sure = calmContext(undefined, (t) => {
+    const sure = threeRounds(undefined, (t) => {
       t.play.lossHappinessDropChance = 1;
     });
     let pet = playGame(withHappiness(2), LOST, sure).state;
@@ -249,7 +255,7 @@ describe('what a game does (PLAY-04…06, HAP-02)', () => {
 });
 
 describe('playing too much (EDU-04, EDU-05)', () => {
-  const sure = calmContext(undefined, (t) => {
+  const sure = threeRounds(undefined, (t) => {
     t.play.overplayThreshold = { min: 3, max: 3 };
     t.play.overplayEducationDropChance = 1;
   });
@@ -300,7 +306,7 @@ describe('playing too much (EDU-04, EDU-05)', () => {
   });
 
   it('draws the threshold between 3 and 5 when counting starts', () => {
-    const wide = calmContext();
+    const wide = threeRounds();
     const seen = new Set<number>();
     for (let seed = 1; seed <= 200; seed++) {
       const pet = hatch(wide, seed);
@@ -313,7 +319,7 @@ describe('playing too much (EDU-04, EDU-05)', () => {
 });
 
 describe('who can play', () => {
-  const ctx = calmContext();
+  const ctx = threeRounds();
   const play: { kind: 'play'; shape: Shape } = { kind: 'play', shape: 'rock' };
 
   it('is refused while asleep or sick', () => {
@@ -347,7 +353,7 @@ describe('who can play', () => {
 
 describe('game settings (PLAY-01)', () => {
   it('allows 3 to 5 rounds', () => {
-    const base = calmContext().settings;
+    const base = threeRounds().settings;
     for (const jokenpoRounds of [3, 4, 5])
       expect(validateSettings({ ...base, jokenpoRounds })).toEqual([]);
     for (const jokenpoRounds of [2, 6, 3.5])

@@ -63,6 +63,12 @@ export interface Tuning {
     /** Pet never raises education past C+ (EDU-03). */
     petEducationCap: number;
     educateGain: number;
+    /**
+     * What a pet needs to be taken to SuperHappy by a won game (HAP-05): hunger and thirst above
+     * three of the four icons (7 of 8 half-steps), education at B+ or better, and no sickness,
+     * dirt or temperature trouble.
+     */
+    superHappy: { minHunger: number; minThirst: number; minEducation: number };
   };
 
   health: {
@@ -217,6 +223,7 @@ export const DEFAULT_TUNING: Tuning = {
     petEducationGain: 1,
     petEducationCap: 2, // C+
     educateGain: 1,
+    superHappy: { minHunger: 7, minThirst: 7, minEducation: 3 }, // > 3 bowls, > 3 glasses, B+
   },
 
   play: {

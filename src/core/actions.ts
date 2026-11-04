@@ -32,7 +32,7 @@ export type Action =
 /** Why the pet turned an action down; the UI plays the head shake for all of them. */
 export type Refusal =
   | 'locked' // dead, or in the locked final form (LIFE-05)
-  | 'asleep' // only Lamp, Check and Clock work at night (SLEEP-09)
+  | 'asleep' // only Lamp, AC, Check and Clock work at night (SLEEP-09)
   | 'sick' // a sick pet refuses everything except Medicine, Lamp, Check, Clock and AC (SICK-01/02)
   | 'full' // a full pet refuses food and drink (Q-FOOD-3 default)
   | 'notForSpecies' // a pet refuses food that does not suit its species, even when hungry (round 16)
@@ -46,7 +46,7 @@ export interface ActionResult {
   refused: Refusal | null;
 }
 
-const WORKS_ASLEEP = new Set<Action['kind']>(['lamp', 'check', 'clock']);
+const WORKS_ASLEEP = new Set<Action['kind']>(['lamp', 'ac', 'check', 'clock']);
 const REFUSED_WHEN_SICK = new Set<Action['kind']>([
   'drink',
   'food',

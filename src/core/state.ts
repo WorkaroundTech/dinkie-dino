@@ -27,9 +27,13 @@ export type DeathCause =
 export const METER_MAX = {
   hunger: 8, // 4 bowls x half steps; 0 = completely empty (HUNGRY)
   thirst: 8, // 4 glasses x half steps; 0 = completely empty (THIRSTY)
-  happiness: 4, // 0 VerySad, 1 Sad, 2 Normal, 3 Happy, 4 VeryHappy
+  happiness: 5, // 0 VerySad, 1 Sad, 2 Normal, 3 Happy, 4 VeryHappy, 5 SuperHappy
   education: 4, // 0 E+, 1 D+, 2 C+, 3 B+, 4 A+ (EDU-01)
 } as const;
+
+/** The top two happiness levels: Play reaches VeryHappy; SuperHappy needs a pet in good shape (HAP-05). */
+export const VERY_HAPPY = 4;
+export const SUPER_HAPPY = 5;
 
 export interface Needs {
   hunger: number;

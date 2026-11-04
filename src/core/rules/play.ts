@@ -2,8 +2,9 @@ import type { Context } from '../context';
 import type { GameEvent, RoundOutcome } from '../events';
 import { chance, randInt } from '../rng';
 import type { PetState, Shape } from '../state';
-import { METER_MAX } from '../state';
+import { VERY_HAPPY } from '../state';
 import { lower, raise } from './meters';
+import { playHappinessCap } from './mood';
 
 /** Room reserved per game in the pet-hand stream; a game has 3 to 5 rounds. */
 const HANDS_PER_GAME = 8;
@@ -69,9 +70,10 @@ export function playRound(
 
 /**
  * The effects of a finished game (PLAY-04…06, HAP-02, EDU-04/05).
- * - Over-play: a game played while happiness is already at the top counts; after 3 to 5 of them,
+ * - Over-play: a game played while happiness is already at VeryHappy or above counts; after 3 to 5 of them,
  *   each further game may cost one grade of education. Ties count too.
- * - A win makes the pet happier (and is the only way to the very top), and lightens it.
+ * - A win makes the pet happier (and is the only way to VeryHappy, and to SuperHappy when the pet
+ *   is in good shape, HAP-05), and lightens it.
  * - A loss changes nothing, but from the second loss in a row it may cost a happiness level.
  * - A tie changes nothing and neither adds to nor breaks a losing streak.
  */
@@ -81,7 +83,7 @@ function finishGame(pet: PetState, ctx: Context, atMs: number, events: GameEvent
   if (!game) return;
   const { result, petWins, playerWins } = gameResult(game.rounds);
 
-  if (pet.needs.happiness === METER_MAX.happiness) {
+  if (pet.needs.happiness >= VERY_HAPPY) {
     pet.play.overplayCount += 1;
     pet.play.overplayThreshold ??= randInt(
       pet.seed,
@@ -99,7 +101,7 @@ function finishGame(pet: PetState, ctx: Context, atMs: number, events: GameEvent
   }
 
   if (result === 'petWon') {
-    raise(pet.needs, 'happiness', 1);
+    raise(pet.needs, 'happiness', 1, playHappinessCap(pet, ctx));
     pet.play.lossStreak = 0;
     burnWeightFromWin(pet, ctx);
   } else if (result === 'petLost') {
@@ -117,9 +119,9 @@ function finishGame(pet: PetState, ctx: Context, atMs: number, events: GameEvent
   events.push({ type: 'jokenpoGame', atMs, result, petWins, playerWins });
 }
 
-/** The over-play count only runs while happiness is at the top: it restarts once it leaves it (EDU-05). */
+/** The over-play count only runs while happiness is at VeryHappy or above: it restarts once it drops below VeryHappy (EDU-05). */
 export function syncOverplay(pet: PetState): void {
-  if (pet.needs.happiness < METER_MAX.happiness) {
+  if (pet.needs.happiness < VERY_HAPPY) {
     pet.play.overplayCount = 0;
     pet.play.overplayThreshold = null;
   }
