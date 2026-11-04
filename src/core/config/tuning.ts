@@ -337,8 +337,10 @@ export const DEFAULT_TUNING: Tuning = {
   careScore: {
     mistakes: {
       sick: { points: 3, graceChecks: 4 }, // 1 hour
-      tooCold: { points: 2, graceChecks: 4 },
-      tooHot: { points: 2, graceChecks: 4 },
+      // Normal pacing: the room drifts twice as fast and slips out of the band several times as
+      // often, so each lapse is cheap (0.5). The relaxed pacing charges 2 (config/profiles.ts).
+      tooCold: { points: 0.5, graceChecks: 4 },
+      tooHot: { points: 0.5, graceChecks: 4 },
       dirty: { points: 2, graceChecks: 8 }, // 2 hours
       lightOn: { points: 2, graceChecks: 1 }, // 15 minutes of the night
       hungry: { points: 1, graceChecks: 4 },
@@ -346,7 +348,7 @@ export const DEFAULT_TUNING: Tuning = {
       sad: { points: 1, graceChecks: 8 },
     },
     angelAtOrBelow: 32, // about 1.7 points a day for a 19-day life (docs/16)
-    angelPointsPerDay: 1.7, // 51 points at day 30
+    angelPointsPerDay: 1.72, // 52 points at day 30
     superHappy: { minChecks: 4, points: 1, maxPoints: 8 }, // one hour per point (round 18)
     longevity: { maxRiskReduction: 0.1, maxWakeUps: 30 }, // 10% and up to 30 days (round 18)
   },

@@ -138,7 +138,7 @@ describe('the score and the verdict (CARE-04)', () => {
     expect(careVerdict(pet, tuning)).toBe('demon');
   });
 
-  it('allows more points to a longer life: 1.7 a day once that is more than 32 (CARE-04)', () => {
+  it('allows more points to a longer life: 1.72 a day once that is more than 32 (CARE-04)', () => {
     const pet = fresh();
     expect(angelLimit(pet, tuning)).toBe(32); // a young pet
     pet.wakeUps = 18;
@@ -146,22 +146,22 @@ describe('the score and the verdict (CARE-04)', () => {
     pet.wakeUps = 25;
     expect(angelLimit(pet, tuning)).toBe(43);
     pet.wakeUps = 30;
-    expect(angelLimit(pet, tuning)).toBe(51);
+    expect(angelLimit(pet, tuning)).toBe(52);
 
     pet.care.counts.sick = 17; // 51 points
     expect(careVerdict(pet, tuning)).toBe('angel');
-    pet.wakeUps = 29; // the same points, a day earlier: the limit is 49
+    pet.wakeUps = 29; // the same points, a day earlier: the limit is 50
     expect(careVerdict(pet, tuning)).toBe('demon');
   });
 
   it('judges quality against that limit too', () => {
     const pet = fresh();
     pet.wakeUps = 30;
-    pet.care.counts.sick = 17;
+    pet.care.counts.sick = 18; // 54 points, above the limit of 52
     expect(careQuality(pet, tuning)).toBe(0);
     pet.care.counts.sick = 0;
-    pet.care.counts.hungry = 26; // 26 of 51
-    expect(careQuality(pet, tuning)).toBeCloseTo(25 / 51);
+    pet.care.counts.hungry = 26; // 26 of 52
+    expect(careQuality(pet, tuning)).toBeCloseTo(0.5);
   });
 
   it('takes the SuperHappy bonus off, and never goes below zero', () => {

@@ -15,12 +15,21 @@ describe('pacing (round 15: normal about every 4 hours, relaxed about every 8)',
     expect(DEFAULT_SETTINGS.pacing).toBe('normal');
   });
 
-  it('relaxed halves the drift of the room, which doubles the time between looks, and changes nothing else', () => {
+  it('relaxed halves the drift of the room, which doubles the time between looks, and charges more for its lapses, and changes nothing else', () => {
     const normal = tuningForPacing('normal');
     const relaxed = tuningForPacing('relaxed');
     expect(relaxed.temperature.moveChance).toBeCloseTo(normal.temperature.moveChance / 2);
 
+    expect(relaxed.careScore.mistakes.tooHot.points).toBeGreaterThan(
+      normal.careScore.mistakes.tooHot.points,
+    );
+    expect(relaxed.careScore.mistakes.tooCold.points).toBeGreaterThan(
+      normal.careScore.mistakes.tooCold.points,
+    );
+
     relaxed.temperature.moveChance = normal.temperature.moveChance;
+    relaxed.careScore.mistakes.tooHot.points = normal.careScore.mistakes.tooHot.points;
+    relaxed.careScore.mistakes.tooCold.points = normal.careScore.mistakes.tooCold.points;
     expect(relaxed).toEqual(normal);
   });
 
